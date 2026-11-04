@@ -1,7 +1,7 @@
 # EDA_Engineer 스킬 프로젝트 — 세팅 · 이해 · 보완점 Plan
 
 작성: Claude (lead), Codex 검토 반영. 날짜: 2026-11-04.
-범위: 이 문서는 **스킬을 아직 쓰지 않는다.** (1) AI_EDA 실행 환경 세팅 결과, (2) AI_EDA_Engineer 프로젝트 이해, (3) 보완점과 다음 단계, (4) 확장 방향(범용 회로 설계·프로그래머블 소자 시뮬레이션, §7)만 적는다. 스킬 본문(SKILL.md)은 이 plan을 사용자가 확인한 뒤 천천히 진행한다.
+범위: 이 문서는 **스킬을 아직 쓰지 않는다.** (1) AI_EDA 실행 환경 세팅 결과, (2) AI_EDA_Engineer 프로젝트 이해, (3) 보완점과 다음 단계, (4) 확장 방향(범용 회로 설계·프로그래머블 소자 시뮬레이션, §7), (5) 참고 스킬(kicad-happy·ee-skills, MIT)에서 가져올 것과 판매용 보호 조치(§8), (6) 다중 에이전트 호스트·다중 AI API 대응(§9)만 적는다. 스킬 본문(SKILL.md)은 이 plan을 사용자가 확인한 뒤 천천히 진행한다.
 
 ---
 
@@ -212,6 +212,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
    ⑧ D7 넷리스트→D1 변환기(비용: 파서 + 왕복 테스트; D1 형식 확정 뒤).
    ⑨ §7.4 (c)(d) 외부 설치: standalone ngspice-47, C 컴파일러·Verilator(비용: 설치 + 라이선스 경계 판단, §7.4 위험 표).
    ⑩ §3.3 권고 확인: `check_evidence.py`·`references/ir.md` 만들지 않음, SKILL.md 250줄 이하.
+   ⑪–⑮ 판매·보호 관련 결정은 §8.4 끝의 목록(공개 시점, EULA, 판매 채널, 참고 레포 포함 여부, 법률 확인 담당).
 2. **A5 수정 + A6 잔여 테스트 1개** (Codex 1순위였던 "A5+A6"의 축소판): run/review의 `IRSchemaError → exit 2` 매핑(시작 전 확인: README의 exit code 설명과 `tests/test_cli_llm.py`의 `assert code == 1`이 손상 IR이 아니라 질문 차단을 뜻하는지), `proposes nothing` 테스트(트리거: `plan.buildable`이 False인 plan — `agents/circuit.py:147-149` — 을 `design_from_requirements` monkeypatch로 만들고 `confirm_design=yes`를 준다). A6의 제품 코드 수정은 없음(테스트 1개만 추가); 사유 문자열 5개의 `answers.md` 수록은 6단계에서. 검증은 15분 전체 실행이 아니라 `pytest tests/test_ir.py tests/test_workdir_relocate.py tests/test_circuit_templates.py tests/test_leave_out.py`로.
 2b. **B11 W1+W2 회로도 배선** (사용자 요청 2026-11-04; Codex 회의 #3 "go with changes"): 토폴로지 순 배치 + 핀 ≤ 4 넷의 trunk 배선 + junction + 라벨 유지 + 기하 가드 예외 1개 + 테스트 3개 → PR. W3는 나중.
 3. **B4 메시지 + B2/B9/B10 단계 의미론** (Codex 2순위).
@@ -220,6 +221,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 5. **스킬 설계 회의 #3** (Codex와 reason-network; #2는 §7 검토로 이미 열렸다, §5): §3.3 확정. B1 기록(4단계) 뒤에 연다(문서가 "바라는 버전"이 아니라 측정값을 말하도록).
 6. **SKILL.md 초안** → 실제 과제 2개로 시험(분배기 재설계, 의도적으로 kicad-cli 없는 환경) → Codex review → 수정. PASS 조건: 두 과제 모두 스킬이 보고한 단계 상태가 `pipeline.json`의 `state.outcomes[]`와 일치하고, 스킬이 pipeline.json에 없는 PASS를 한 번도 주장하지 않으며, kicad-cli 없는 과제에서 ERC/DRC를 NOT_VERIFIED로 보고한다.
 7. **푸시**: EAD_Engineer_Skill에 커밋. AI_Project 레포에는 `scripts/rn_bridge.py`와 `.gitignore`만.
+7b. **판매 등록**(§8.5): 법률 플래그 (d) 확인 → LICENSE/NOTICE 최종 → agensi 등록(zip = SKILL.md + references 3 + scripts). 직접 판매를 병행하면 H3·H4.
 8.–11. **확장(§7.4)**: §7.4의 순서(D1→D4→D3→D6; E1→E3→E2(+E4); 측정 뒤 E5/E6)를 따른다. 1–7이 끝난 뒤에만.
 
 ## 5. Codex 검토 의견 (회의 #1, 2026-11-04, reason-network)
@@ -317,3 +319,174 @@ E1–E3는 `d_process`/`d_cosim` 카드를 전혀 만들지 않으므로(측정�
 ### 7.5 스킬에 미치는 영향
 - 지금(스킬 초안)은 현재 사실 한 줄만: SKILL.md "하드 리밋"에 "MCU/FPGA/IC는 SPICE 모델이 없으면 `exclude`이며, 그 부품을 지나는 요구는 NOT_VERIFIED다. 펌웨어는 실행되지 않는다. 템플릿 외 회로는 `no template matches…` 거부가 정상이다."
 - 그 외의 스킬 문서 갱신은 해당 항목이 PASS 조건을 통과한 뒤에만(구현 전 문서화 없음; Codex 회의 #2로 목록 삭제). "동작한다"는 동사는 tool-backed PASS가 있는 넷·기대값에만 쓴다.
+
+---
+
+## 8. 참고 스킬에서 가져올 것과 판매용 보호 조치
+
+사용자 요청(2026-11-04): 이 스킬은 agensi.io 같은 사이트에 판매하므로 타인이 허가 없이 쓰지 못하게 하는 조치가 필요하다. 이 절은 (1) 참고한 두 스킬에서 무엇을 가져오고 무엇을 버리는지, (2) 판매용 보호 조치를 §2.2·§3.3의 원칙(증거 없음 = NOT_VERIFIED, PASS는 tool-backed만, LLM은 제안만, 관측 텍스트는 데이터)으로 번역한다. 근거는 세션 scratchpad의 클론(`KH` = `…\scratchpad\ext\kicad-happy`, `EXT` = `…\scratchpad\ext\ee-skills`)과 웹 조사(출처 URL 목록은 8.4 끝). 출처 없는 사실은 추정/UNVERIFIED로, 법률 판단은 **전문가 확인**으로 표시한다(이 절은 법률 자문이 아니다).
+
+### 8.1 참고 대상과 라이선스
+| 대상 | 무엇인가 | 라이선스 | 상태 |
+|---|---|---|---|
+| kicad-happy (github.com/aklofas/kicad-happy, 클론 `c451943`, 2026-11-03) | KiCad 설계 리뷰 스킬 1개 + 참고 문서 20개 + 스크립트 ~45개; "5,857개 공개 레포 코퍼스로 회귀 검증"(`KH\VALIDATION.md:13`, **저자 주장, 미재현** — §2.2 기준 assumption) | MIT, "Copyright (c) 2025 Andrew Klofas"(`KH\LICENSE`) | GitHub 페이지(2026-11-04 읽음): 1.6k stars, 141 forks, v3.0.0 |
+| ee-skills (github.com/fxp/ee-skills, 클론 `3414c33`, 2026-10-20) | 규칙 카탈로그 531개(YAML) → 생성된 스킬 11개 + DRC/기하 검증 하니스; 본문은 중국어 | MIT, "Copyright (c) 2026 fxp"(`EXT\LICENSE`) | 저자 스스로 "약 83 % 맞음"(`EXT\docs\AUDIT.md`) |
+
+- 두 참고 대상은 MIT **라이선스**의 스킬이다(MIT 대학과 무관).
+- MIT 재사용 규칙: 텍스트·코드를 **글자 그대로 복사**하면 그 부분에 저작권 고지 + MIT 전문 동봉(기존 `NOTICE` 파일 하나로 충분; 현재 "복사한 파일 없음" 상태, `EAD_Engineer_Skill\NOTICE`). 아이디어·워크플로를 **우리 말로 다시 쓰면** 의무 없음이 통설이나, **구조를 가깝게 따라 쓴 패러프레이즈는 2차적 저작물이 될 수 있다 — 추정, 전문가 확인**. MIT에서 온 부분은 어차피 "타인이 허가 없이 못 쓰는 것"이 될 수 없으므로 보호 대상은 우리 층(8.4)뿐이다.
+
+### 8.2 가져올 것 (G1–G10)
+원칙: kicad-happy의 `confidence`는 **"얼마나 믿을지"**, 우리 6개 상태는 **"증거가 있는지"**를 말한다 — 병렬 상태 체계를 들여오지 않고 매핑만 한다(G10).
+
+| # | 항목 | 출처(파일) | 우리 plan의 어디에 | 무엇을 바꾸나 | 비용 / PASS 조건 |
+|---|---|---|---|---|---|
+| G1 | 보고서 계약: 실행한 도구 / 안 돌린 도구와 이유 / 검증·추론 분리 / 블로커 상단 / "Not Performed · Review Limits" / 최종 판정 | `KH\skills\kicad\references\report-generation.md:5-16,20-38,123-128` | §3.3 "상태별 허용 동사" 행 옆에 "보고서 형식" 행 신설; SKILL.md 본문 | 상태 동사 규칙만 있던 것을 **고정 섹션 6개**로: 실행 단계·NOT_VERIFIED 단계와 이유·FAIL/USER_INPUT_REQUIRED 표(상단)·증거 장부·하드 리밋·판정 한 줄. 어휘는 kicad-happy의 Verified/Unverified가 아니라 우리 6 상태 verbatim | S / §4 6단계 과제 2개의 보고서에 6개 헤더가 모두 있고, 각 단계 상태가 `pipeline.json` `state.outcomes[]`와 일치 |
+| G2 | 헤더 검사 스크립트 | `KH\skills\kicad\scripts\check_report_sections.py`(`BASE_SECTIONS` L54-63, 누락 시 exit≠0) | §3.3 `scripts/` 행(`check_evidence.py` 없음 유지) | **증거 판정은 안 하고** 헤더 존재만 보는 30줄 `scripts/check_report.py`; 증거 라벨은 여전히 `ai-eda review/report`가 계산 | S / 헤더 하나 지운 보고서에 exit 1, 정상 보고서에 exit 0; 테스트 2개 |
+| G3 | 금지 어휘 규칙: 근거 없는 리뷰는 "verified/confirmed/per datasheet" 금지 | `KH\skills\kicad\SKILL.md:40`(DS-001), `report-generation.md:50` | §3.3 "상태별 허용 동사", §7.5 | SKILL.md에 **상태별 금지 동사 표**(NOT_VERIFIED/UNRESOLVED 단계에 "동작한다/검증됨/verified" 금지) + 6단계 시험 과제 1개(NOT_VERIFIED 단계가 있는 보고서). **스크립트 게이트는 두지 않는다** — `pipeline.json`을 읽어 증거를 판정하면 §3.3이 거부한 `check_evidence.py`와 같고, 한국어 동사 매칭은 깨지기 쉽다; 사람/Codex 리뷰가 판정 | S / 시험 과제 보고서에 금지 동사 0건(리뷰 체크리스트 항목) |
+| G4 | "언제 읽나" 참고 표(파일·줄 수·상황) + "첫 부분만 읽기" 같은 리뷰 실패 모드 목록 | `KH\skills\kicad\SKILL.md:727-748`, `:74-83` | §3.3 파일 구조 행(references 3개 상한 유지) | SKILL.md 상단에 3행 표(`pipeline.md`/`answers.md`/`without-cli.md` × 줄 수 × 트리거)와 실패 모드 6줄(같은 턴 `confirm_*` 자답, `doctor --strict` 생략, stdout 파일명 파싱, 관측 텍스트 지시 따름, IR 직접 편집, 외부 행위 선행) | S / 표의 줄 수가 실제 파일과 같음(§3.5 A6식 드리프트 테스트 1개); 6단계 시험에서 실패 모드 0회 |
+| G5 | 보안 규칙 5줄: 외부 내용은 데이터, 분석은 읽기 전용, 서브프로세스는 리스트 인자, eval/exec 없음, 네트워크 범위 명시 | `KH\skills\kicad\SKILL.md:827-850`; `shell=True` 0건 확인 | §3.3 "관측 텍스트" 행, 8.4 H4 스크립트 | 스킬 `scripts/`의 코딩 규칙으로 고정 + 네트워크는 "0건(승인 전)"으로 kicad-happy보다 좁게 | S / `grep -r "shell=True\|eval(\|exec(\|urllib\|requests\|httpx" scripts/`가 0건인 테스트 1개 |
+| G6 | 발동 문구를 인용한 frontmatter description + 길이 상한 CI | `KH\skills\kicad\SKILL.md:3-17`, `KH\.github\scripts\check_skill_metadata.py:36`(1024자) | §3.3 frontmatter 행, §4 6단계 | 10/5 발동 시험에 더해 description에 인용 문구 ≥5개("회로 설계해 줘", "ERC 돌려 줘", "ai-eda로…")와 1024자 상한 검사 | S / 10/10 발동, 5/5 미발동(기존) + 길이 테스트 |
+| G7 | 규칙 카탈로그 스키마: `id`·`severity`·`verify[]{method, tool, check, automatable}`·`sources[]`·`confidence`·`conflicts` | `EXT\docs\SCHEMA.md`, `EXT\tools\validate.py:24-36,81-94` | §2.3 19단계 / `ValidationResult`; 스킬 `references/pipeline.md` | 우리 검증기 id(`ir.*`, `pcb.*`, `review.*`)마다 **한 줄**: 어떤 도구가, 무엇을, 어떤 자동화 수준으로 보는지 + 출처. 규칙 본문은 가져오지 않음(8.3); `conflicts`는 "측정 안 됨/서로 다른 벤더 값"을 숨기지 않는 관행만 | M / pipeline.md의 검증기 행 수 = `stages.py`/레지스트리의 id 수(드리프트 테스트), `tool` 없는 행은 "의견"으로 표기 |
+| G8 | 런타임 canary: 프로젝트 `.kicad_dru`에 반드시 1회 발화하는 가짜 규칙을 넣고, 발화 없음 → `error`(pass 아님); `error`≠`fail` | `EXT\docs\VERIFICATION_TOOLCHAIN.md` §2.4, `EXT\tests\test_checkers_seeded.py:133-139`, `checkers\common.py:192-207` | §2.3 14단계, §3.2 B1, §3.5 B11 | B1은 테스트 시점 canary였다; **실행 시점** canary를 제안(DRC 단계가 canary 미발화면 `drc` NOT_VERIFIED + 메시지). 도구 오류는 판정이 아니다. **결정 ①=(a)(업스트림 PR)일 때만**; ①은 아직 미답(§4 1단계), (b)면 `without-cli.md`에 주의사항으로만 | M / 문법 오류를 넣은 `.kicad_dru`로 DRC가 exit 0이어도 단계가 PASS가 아닌 NOT_VERIFIED; 정상 파일은 기존 테스트 불변 |
+| G9 | 결정성 가드(두 번 실행, 타임스탬프 제외 비교) + 심은 결함으로 pass→fail 뒤집힘을 검증 PASS 조건으로 | `KH\.github\workflows\ci.yml:104-135`; `EXT\tests\test_checkers_seeded.py:43-58,142-153` | §3.5 B1·B11 W1, §4 6단계 | 스킬 시험 과제에 "같은 IR 두 번 run → `pipeline.json` 동일(시각 제외)" 1개와 "저항값을 틀리게 바꾼 분배기 → `calc.recompute` FAIL" 1개 추가; 코퍼스는 **축소**(우리 템플릿 6개 보드) | S / 두 과제 모두 기대 결과; 뒤집히지 않으면 스킬이 PASS를 주장할 수 없음 |
+| G10 | 신뢰 라벨 **매핑**(병렬 체계 없이) | `KH\skills\kicad\scripts\analyzer_envelope.py:122-126`; `EXT\docs\SCHEMA.md` confidence | §2.2 상태표·provenance 5종; SKILL.md 상태표 각주 | `deterministic`+tool → PASS/FAIL; `heuristic` → 의견(`tool` 없음 = NOT_VERIFIED); `datasheet-backed` → provenance `authoritative`(아카이브 PDF에서 verbatim일 때만, 그 외 NOT_VERIFIED); ee-skills `confidence: high`는 바꿔 쓴 요약이므로 `assumption`/`derived`까지만, 절대 `authoritative` 아님 | S / SKILL.md 각주 1개; 6단계 시험 보고서에 kicad-happy/ee-skills 어휘 0건 |
+
+가져오되 **값만 바꾸는 것**: kicad-happy의 `trust_summary`(`analyzer_envelope.py:90-92`, 0건이면 None)는 보고서의 "단계 N개 중 PASS n/NOT_VERIFIED m/FAIL k" 한 줄로 대체(새 필드 없음); `diagnostics[]`의 "약한 경로로 돌았다" 기록은 `without-cli.md`의 증거 장부 행 형식에 "대체 경로: <도구 없음 사유>" 열로. 이전 리뷰와의 diff(`SKILL.md:422`)는 `ai-eda review`가 이미 해시로 stale을 잡으므로 **안 가져온다**(비용 대비 0).
+
+### 8.3 가져오지 않을 것
+| 항목 | 출처 | 한 줄 이유 |
+|---|---|---|
+| 도구 없이 단정하는 분석기·점수: 0-100 EMC 위험 점수, ×1.5 가중, 0건이면 `trust_level: high` | `KH\skills\emc\scripts\analyze_emc.py:62-112`, `finding_schema.py:359-360` | tool-backed 근거 없는 수치 = 의견; 우리는 점수 없이 상태만 |
+| "시뮬레이터 없으면 오류 아님, 건너뜀" | `KH\skills\spice\SKILL.md:46`(코드는 exit 1, 문서와 불일치) | 증거 없음은 NOT_VERIFIED로 **보고**하지 조용히 생략하지 않음 |
+| LLM이 뽑은 데이터시트 값을 스키마 통과만으로 `datasheet-backed` 처리(페이지는 자기 신고) | `KH\skills\datasheets\scripts\merge_results.py:79-91` | §2.2: 아카이브 PDF에서 verbatim 발견만 grounded; 그 외 NOT_VERIFIED |
+| 벤더 한계를 코드 주석·마크다운 표로("verified 2025-01") | `KH\skills\kicad\scripts\pcb\dfm.py:106-123`, `KH\skills\jlcpcb\SKILL.md:80-104` | §2.3 7단계: 아카이브된 벤더 페이지에 grounding, 손으로 옮긴 표는 가정 |
+| 규칙 본문 531개(중국어) + 손으로 쓴 `design/<board>.yaml` 역할 파일 + LLM이 규칙별 pass/fail 판정 | `EXT\catalog\*.yaml`, `EXT\skills\ee-design-review`, `EXT\docs\SCHEMA.md`("文字用中文") | 번역+재감사 비용 L, 제2의 원본(IR 단일 원본 위반), LLM 판정은 §2.2 위반; 고객에게 중국어 증거 문자열 노출 |
+| 스킬 11개 + 참고 문서 20개 분산 | `KH\skills\*`, `EXT\skills\*` | §3.3 상한(SKILL.md 250줄 + references 3개) 유지; 과제별로 한 문서만 읽게 하는 G4로 충분 |
+
+### 8.4 판매용 보호 조치 (H1–H6)
+기술적 현실 3줄: (1) SKILL.md는 평문 Markdown이고 구매자의 에이전트가 전문을 읽어야 작동하므로 **텍스트 자체는 어떤 기술로도 숨길 수 없다**(agensi도 호스팅 MCP로 전문을 돌려준다). (2) 작정한 복제자는 못 막는다; 막을 수 있는 것은 "익명 유출"(추적)과 "스크립트/핵심 로직의 무단 실행"뿐. (3) 현실적 조합 = 법적 근거 + 추적 가능성 + (선택) 서버 측 핵심. 정직성 규칙: **어떤 보호 장치도 검증 결과를 꾸미거나 숨기지 않는다** — 키가 없으면 "라이선스 없음"이라 말하고 멈추지, 조용히 약한 결과를 내지 않는다.
+
+| # | 조치 | 막는 것 | 못 막는 것 | 비용 | 정직성 규칙과의 관계 / 비고 |
+|---|---|---|---|---|---|
+| H1 | 독점 LICENSE + `NOTICE` + 모든 SKILL.md/스크립트에 저작권 헤더; MIT 가정 전부 제거 | 법적 근거 없음 상태(저작권 침해 신고의 전제; agensi Terms §8.1 "creators retain ownership"과 일치) | 기술적으로는 아무것도 | S | **현황**: `LICENSE`(독점·열람만, 영문 우선 + 한국어 요약), `NOTICE`(MIT 참고 대상 목록, 복사한 파일 없음), README 고지를 2026-11-04 커밋. **남은 일**: SKILL.md·references·scripts가 생길 때 저작권 헤더 삽입(§4 6단계), `AI_EDA_Engineer` 적용 여부는 결정 ⑭. 법률 플래그 (a)(c)(d) 참조 |
+| H2 | 레포 공개 범위: `Yuchan-00/EAD_Engineer_Skill`은 **비공개**(gh 확인 2026-11-04, fork 0), `Yuchan-00/AI_EDA_Engineer`는 **공개·LICENSE 없음**(gh 확인). 사용자 선택(2026-11-04): 공개를 유지하더라도 **법적 조치(H1)로 대응**한다 — 기술적으로 공개 Markdown의 사용을 막을 방법은 없으므로 판매 전까지는 스킬 레포 비공개 유지를 권장 | 판매 전 무료 복제(비공개일 때) | 이미 클론된 사본; 공개 레포의 열람·fork(GitHub 약관이 허용) | S | 없음. "LICENSE 없음 = 모든 권리 유보"는 **추정** — 법률 플래그 (b). AI_EDA_Engineer에 LICENSE를 넣을지는 결정 ⑭ |
+| H3 | 구매자별 워터마크: frontmatter·주석에 **보이는** 구매자 id 줄(2–3곳); 빌드 스크립트가 사본을 찍음. 제로폭 문자 등 보이지 않는 변형은 **안 씀**(agensi 8항목 스캔·우리 길이 CI에 걸리고, 보이는 id 줄로 추적은 충분) | 익명 유출(추적) | 복사 자체, 에이전트의 바꿔쓰기 | S | 없음. agensi는 zip 1개 업로드라 자체 "구매 명시 라이선스 줄"만 붙음; 직접 판매에서만 우리 워터마크 유효 |
+| H4 | `scripts/`의 오프라인 서명 토큰 검사(Ed25519 공개키 동봉, 토큰 = 구매자 id + 만료). **agensi에서는 불가**(Terms §5.2: 구매자 측에 파일이 남지 않아 토큰을 둘 곳이 없음) — **직접 판매 전용** | zip만 얻은 사람의 스크립트 실행 | SKILL.md 읽기(지식은 산문에 있음), 검사 코드 삭제, "검사 건너뛰라"는 지시 | M | **핵심**: 실패 시 메시지 "no valid licence" + 스크립트 **고유** exit 코드(예: 70; ai-eda의 0/1/2 표와 분리, §3.3 exit 표에 "스크립트 자체 코드"로 명기), 가짜 "verified" 출력·결과 강등 금지; 절대 phone-home 없음(§3.3 외부 행위 = 채팅 승인만, G5 테스트가 네트워크 import 0건 보장) |
+| H5 | 호스팅 핵심(서버 측 API/MCP): `ai_eda` 파이프라인·계산기·리뷰 규칙을 서버에, 스킬은 키 가진 얇은 클라이언트 | 유출 텍스트의 가치(키 없이 무용), 구매자별 회수·사용량 계량 | 비용·가동률 부담 | L | 오프라인 동작과 로컬 증거(`pipeline.json`, §3.1-b) 포기; 서버 응답도 PASS/NOT_VERIFIED 라벨과 해시를 그대로 실을 때만 증거. **수익이 서버를 정당화할 때까지 보류** |
+| H6 | 마켓플레이스 자체 장치(agensi, **2026-11-04 웹 읽기 기준; 약관 변경 가능**): 다운로드 불가(Terms §5.2), 로드마다 "저장/내보내기 금지" 지시 + 구매 명시 라이선스 줄, 개인·비양도 라이선스(§5.1/§8.2), 70/30, Stripe/USDC, KYC | 에이전트가 지시를 무시하고 저장하는 것(지시+계약일 뿐) | 0 | **비용**: 창작자는 에이전트 배포를 거부할 수 없음(§6.5) → 전문이 항상 구매자 에이전트에 노출, H4 불가. UNVERIFIED: 80/20 분배(제3자 글), 창작자 호스팅 엔드포인트+서명 토큰(창업자 Reddit 언급, 미출시), SkillHQ "보이지 않는 워터마크" |
+
+**법률 플래그(모두 전문가 확인; 이 문서는 자문이 아님)**:
+(a) MIT 구조를 가깝게 따른 패러프레이즈도 2차적 저작물일 수 있음 — 추정(8.1).
+(b) "LICENSE 없음 = 모든 권리 유보"는 추정; GitHub 약관(§D.5로 알려짐, 출처는 입력에 없음)이 공개 레포의 열람·포크를 별도로 허용함.
+(c) DMCA는 미국법; 사용자에게는 한국 저작권법과 마켓플레이스 정책이 적용 — 신고 경로는 플랫폼별로 확인.
+(d) **AI 생성 텍스트의 저작권**: SKILL.md 대부분을 Claude가 초안하므로 "Copyright (c) 2026 Yuchan"의 집행 가능성은 다툼이 있음(예: 미국 저작권청의 AI 생성물 입장). H1–H3의 전제이므로 **등록 전** 확인; 완화책(사람이 쓴 부분의 기록, 편집·선택의 기여 명시)도 함께 묻는다.
+
+권장 **최소 1차 패키지**: H1(커밋/푸시 + 헤더 + AI_EDA_Engineer 적용) + H2 + H6(agensi 그대로 판매). H3·H4는 직접 판매가 생길 때(현재 스크립트는 `ai-eda` 호출 래퍼라 보호 가치 낮음), H5는 보류. 난독화(PyArmor/Cython)는 Markdown에 무효·에이전트 실행 출력으로 거동 노출 → 채택 안 함.
+
+**사용자 결정이 필요한 것**(§4 1단계 목록에 추가; ①–⑩에 이어):
+⑪ 스킬 레포를 공개로 돌릴지(사용자 질문 2026-11-04; 선택 = 법적 조치로 대응. 공개 시점은 판매 등록 뒤를 권장; 비용: 공개하면 열람·fork는 막지 못함).
+⑫ H1 라이선스 형태 — **결정됨(2026-11-04): 독점·열람만(LICENSE 초안)**; 구매자당 사용 범위를 적은 EULA 추가 여부는 남음(비용: 문안 작성; 법률 검토는 사용자).
+⑬ 판매 채널 — agensi 호스팅 MCP만 / 직접 판매 병행(병행이면 H3·H4 필요).
+⑭ AI_EDA_Engineer(참고 레포)도 같은 판매 대상인지 — 그렇다면 그 레포에도 H1 적용; simavr/Verilator 등 GPL 도구 바이너리는 **동봉하지 않고** 구매자 설치(§7.4 위험 표 "라이선스").
+⑮ 법률 플래그 (a)–(d)를 누가 언제 확인하는지(등록 전 필수는 (d)).
+
+출처(2026-11-04 읽음): agensi.io/sell, /terms, /about, /claude-marketplace, /docs/how-agents-load-skills; peerpush.com/p/skillhq; claudskills.com/learn/the-economics-of-claude-code-skill-marketplaces/; github.com/Yuchan-00/AI_EDA_Engineer; 로컬 `EAD_Engineer_Skill\LICENSE`·`NOTICE`.
+
+### 8.5 순서
+| 시점 | 항목 |
+|---|---|
+| 지금 (§4 1단계와 함께) | H1 LICENSE/NOTICE/README 커밋·푸시(완료), 결정 ⑪·⑬·⑭·⑮ |
+| SKILL.md 초안 전 (§4 5단계 회의 #4 의제) | G1·G3·G4·G10 형식 확정(초안이 그 형식으로 쓰이도록), G7 검증기 한 줄 표의 범위, G8은 결정 ①=(a)일 때 참고 레포 PR 큐에 B1 뒤로 |
+| SKILL.md 초안과 같이 (§4 6단계) | G2·G5·G6·G9 테스트, G1 보고서 6개 헤더, G3 금지 동사 표, H1 헤더 삽입 |
+| 판매 등록 직전 (§4 7단계 푸시 뒤, 새 "7b 등록" 단계) | 법률 플래그 (d) 확인, H1 LICENSE/NOTICE 최종(AI_EDA_Engineer 포함), H6 agensi 등록(zip = SKILL.md + references 3 + scripts), 직접 판매면 H3·H4 |
+| 보류 | H5 호스팅 핵심(수익 뒤), kicad-happy식 코퍼스 회귀(템플릿 6개로 축소한 G9가 대신) |
+
+---
+
+## 9. 다중 에이전트 호스트 · 다중 AI API 대응
+
+사용자 요청(2026-11-04): "claude code뿐만 아니라 여러 에이전트 프로그램에서 원활히 구동되도록, 최대한 모든 AI API에 대응." 이 절은 그 요청을 두 가지 독립된 일로 나눈다. 근거: 호스트 문서 조사(2026-11-04, 각 벤더 docs; 원문은 `notes/research/hosts-2026-11-04.md`로 저장), kicad-happy·ee-skills 레포의 어댑터 구조 조사, 참고 레포 `ai_eda/llm/` 소스 읽기(실행 없음). 출처 없는 사실은 UNVERIFIED. §8(참고 스킬·Agensi MCP 판매 보호)과 겹치는 내용은 쓰지 않고 §8을 가리킨다.
+
+### 9.1 두 가지 뜻 분리
+| 뜻 | 대상 | 무엇이 바뀌나 | 항목 |
+|---|---|---|---|
+| (a) 스킬이 여러 에이전트 프로그램에서 구동 | `.agents/skills/eda-engineer/` (SKILL.md + references 3개, §3.3) | 포맷·문구·설치 경로의 **이식성** | I1–I12 (§9.3) |
+| (b) 엔진 `ai-eda`가 여러 AI API를 쓸 수 있음 | 참고 레포 `ai_eda/llm/` (`--llm` provider) | 제공자 **폭** | J1–J7 (§9.4) |
+
+원칙 (§2.2·§3.3에 추가): **스킬 자체는 어떤 AI API도 호출하지 않는다.** SKILL.md를 읽고 추론하는 모델은 호스트(Claude Code, Codex, Gemini CLI …)가 고른 모델이며 스킬은 그것을 선택·가정할 수 없다. `--llm`은 엔진의 별도 결정이고, 스킬은 설명만 하고 켜지 않는다(§3.3 "유료/온라인 행위"). 따라서 (a)는 "모델을 가정하지 않는 글"의 문제, (b)는 참고 레포 코드의 문제다. 둘을 한 항목으로 섞지 않는다.
+
+### 9.2 호스트 지원 요약
+표준은 Agent Skills 스펙(agentskills.io/specification): `SKILL.md`(frontmatter `name`·`description` 필수, `license`·`compatibility`·`metadata`·`allowed-tools`(experimental) 선택) + `scripts/`·`references/`·`assets/`. 호스트별 한 줄(프로젝트 경로 기준, 전체 표·MCP 설정 파일·출처 URL은 조사 원문):
+- **`.agents/skills/`를 읽는 호스트(9)**: Codex(레포 루트까지 탐색, `$skill`·`/skills` 호출, 정책은 `agents/openai.yaml`), Copilot CLI(`allowed-tools` 읽음, 셸 사전 승인 경고), Gemini CLI(`activate_skill`+사용자 동의), Antigravity, Cursor(+`paths`·`disable-model-invocation`), OpenCode(스펙 외 키 무시, `permission.skill`), Amp(**같은 `name`은 첫 발견이 이김**), Roo(모드별 `skills-<mode>/`), Devin Local(구 Windsurf).
+- **`.claude/skills/`만 읽는 호스트**: Claude Code(`.agents/skills` 미탐색 UNVERIFIED, issue #6235 인용; claude.ai Skills API 업로드는 비표준 키에 하드 실패). Copilot·Cursor·OpenCode·Amp·Cline도 이 경로를 읽는다.
+- **둘 다 아닌 호스트**: Cline(`.cline/skills/`; **전역이 프로젝트를 덮음**), Kiro(`.kiro/skills/`; 커스텀 에이전트는 `resources`에 명시). → **측정 전까지 미지원**; 복사는 9.5 설치 결정 뒤.
+- **MCP는 최소 공통분모**: 모든 호스트가 MCP 서버를 돌리지만, Agensi형 전달(`search_skills`/`get_skill`이 SKILL.md 본문을 도구 결과로 반환)은 호스트의 스킬 로더·동의 프롬프트·`allowed-tools`·번들 파일 접근을 전부 우회하고 텍스트만 주입한다. 공식 Skills-over-MCP 확장은 어느 호스트도 v1 지원을 올리지 않았다(OpenCode·VS Code·Goose "in progress"). 결론: MCP 전달은 "어디서나 되는 지시문 텍스트"이되, 이 경로에서는 (1) description 매칭 발동(I4·I12)이 없어 에이전트가 도구를 **골라 호출**해야 하고, (2) references는 이름으로 요청해야만 닿는다(I7의 cue가 유일한 길). 판매 경로의 상세는 §8.
+
+### 9.3 이식성 규칙 (I) — 우리 SKILL.md/references에 적용
+단일 원본은 `.agents/skills/eda-engineer/`(SKILL.md + `references/pipeline.md`, `answers.md`, `without-cli.md`; 9개 호스트가 그대로 읽음). 호스트 전용 내용은 어댑터 파일(아래 표)에만 둔다. 모든 PASS 조건은 이 PC에서 사람 손으로 돌릴 수 있는 검사다.
+
+| # | 규칙 | PASS 조건 |
+|---|---|---|
+| I1 | frontmatter는 `name: eda-engineer`(디렉터리명과 동일, 소문자-하이픈, ≤64자) + `description`(≤1024자, 발동 문구 포함)만; 선택으로 `license`·`metadata`. `when_to_use`·`allowed-tools`·`argument-hint` 없음 | 키 집합 ⊆ {name, description, license, compatibility, metadata}를 stdlib 스크립트로 검사 + `skills-ref validate` 통과 |
+| I2 | Claude Code 전용 기능 금지: `$ARGUMENTS`/`$0`/`$name`, `` !`cmd` `` 주입, `${CLAUDE_SKILL_DIR}`, `hooks`/`context`/`model`/`effort`/`paths`/`disable-model-invocation` | 스킬 트리 grep `\$ARGUMENTS|\$[0-9]|\$\{CLAUDE_|^!\`` = 0건, frontmatter에 위 키 0개 |
+| I3 | 도구·호스트 중립 문구: "파일을 읽어라 / 명령을 실행하라 / 코드베이스를 검색하라 / 웹을 검색하라", `Read`/`Grep`/`Bash`/`WebSearch`·"Claude"·"Codex" 금지. 주체는 "에이전트" | grep -i `claude|codex|cursor|gemini|copilot|antigravity|Read tool|Grep|Bash` = 0건, **검사 스크립트의 명시 허용 목록**: `--llm claude`가 든 줄, doctor 출력 인용의 `claude cli` 줄(answers.md에 verbatim 필요) — 허용 목록 밖 매치만 실패 |
+| I4 | 슬래시 명령·`$skill` 호출을 전제하지 않음; 발동은 description 매칭(호스트마다 `/name`, `$name`, `activate_skill`+동의로 다름). Codex의 암시 발동은 `agents/openai.yaml`의 `allow_implicit_invocation`이 결정하므로 그 파일 하나를 둔다(아래 표) | grep `/eda-engineer|\$eda-engineer` = 0건; 9.5 T1이 두 호스트에서 통과 |
+| I5 | 의존성은 `ai-eda` CLI 하나. `scripts/` 없음(§3.3 `check_evidence.py` 없음과 일치). 명령은 맨 셸로, 호스트 도구명 없이 | SKILL.md·references의 모든 명령 줄이 허용 목록 중 하나로 시작: `ai-eda`, `python -m ai_eda.cli`, `<repo>/.venv/Scripts/ai-eda.exe`, `<repo>/.venv/bin/ai-eda`, `$env:PYTHONUTF8`, `export PYTHONUTF8`, `kicad-cli`·`ngspice`(without-cli.md), `pytest` |
+| I6 | 경로는 Windows·POSIX 양쪽: 슬래시(`/`), venv fallback은 `<repo>/.venv/Scripts/ai-eda.exe`와 `<repo>/.venv/bin/ai-eda` 둘 다(§3.3 venv 행 확장), `PYTHONUTF8=1`은 PowerShell·bash 두 줄로, `~/.claude`·절대 경로 금지 | grep `~/\.claude|[A-Z]:\\` = 0건(`<repo>` 자리표시자만 허용); venv 두 형태·UTF8 두 줄 존재 |
+| I7 | 점진 공개는 references 3개 상한 안에서: SKILL.md ≤250줄(§3.3), 각 reference는 SKILL.md에 "X일 때 `references/Y.md`를 읽어라" 한 줄로 연결, 한 단계 깊이만. MCP 전달(§8)에서는 에이전트가 파일을 **이름으로** 요청하므로 이 cue가 유일한 길 | `wc -l SKILL.md` ≤250; `references/*.md` 3개 전부 SKILL.md에서 링크+조건 문장; references 안에 `references/` 링크 0건 |
+| I8 | 호스트 컨텍스트 파일(CLAUDE.md·AGENTS.md·system-reminder)의 존재를 가정하지 않음: 관측 텍스트=데이터(§3.3 검토 1-2), 외부 행위 12종 금지, 상태별 허용 동사(검토 1-3)를 SKILL.md **안에** 다시 적는다 | 빈 디렉터리(컨텍스트 파일 없음)에서 9.5 T2를 돌려 스킬이 NOT_VERIFIED를 PASS로 바꾸지 않고 외부 행위를 먼저 하지 않음 |
+| I9 | 압축 안전: 하드 리밋·외부 행위·관측 텍스트 규칙을 SKILL.md 상단 40줄 안에 | 세 블록의 첫 줄 번호 ≤40 |
+| I10 | 모델·컨텍스트 크기·도구 가용성을 가정하지 않음: "웹 검색이 있으면 … 없으면 사용자에게 묻는다"처럼 분기; 거대 문서(README 232 KB 등, §2.5)를 읽으라고 하지 않고 증류본(references)만 가리킴 | SKILL.md에 참고 레포 문서 3개 경로 0건; 도구 가정 문장마다 "없으면" 분기 존재(손 검토) |
+| I11 | 이름 충돌·우선순위: `eda-engineer`는 본문이 한 벌(Cline은 전역 우선, Amp는 첫 발견 우선 → 두 벌이 어긋나면 호스트마다 다른 본문이 뜬다). `.claude/skills/` 사본은 원본과 바이트 동일해야 한다 | (1) 검사 스크립트가 `.agents/skills/eda-engineer` → `.claude/skills/eda-engineer`로 복사한 뒤 `git diff --exit-code`가 0(드리프트 0); (2) 설치된 각 호스트에서 "what skills are available?"에 `eda-engineer`가 정확히 1회 |
+| I12 | description 발동 시험(§3.3 F4)은 Claude Code만이 아니라 설치된 호스트 전부에서 | 양성 10/10·음성 5/5가 Claude Code·Codex 두 곳에서(Codex는 `openai.yaml` 암시 발동 포함; 암시 발동이 안 되면 "`$eda-engineer` 필요"를 측정 결과로 기록하고 I4 재검토). 나머지 호스트는 9.5 설치 결정 뒤 |
+
+**어댑터 파일(kicad-happy 조사에서 축소)** — 본문은 절대 복제하지 않고 메타데이터·포인터만:
+
+| 파일 | 호스트 | 비용 | 비고 |
+|---|---|---|---|
+| `.agents/skills/eda-engineer/{SKILL.md,references/}` | 9개(§9.2 첫 줄) | — | 단일 원본. §8의 Agensi 판매본(zip: SKILL.md+references)은 이 디렉터리만 담는다 |
+| `.agents/skills/eda-engineer/agents/openai.yaml`(`allow_implicit_invocation` 1키) | Codex | S | 다른 호스트는 무시; 판매본 제외. 기본값·키 이름은 Codex 문서로 확정(UNVERIFIED) |
+| `.claude/skills/eda-engineer` | Claude Code(+Copilot·Cursor·OpenCode·Amp·Cline이 중복 발견) | S | 1차: 심링크(git mode 120000; Windows는 Developer Mode 또는 `core.symlinks=true` 필요, 이 PC UNVERIFIED). 실패 시 **복사본** — 어느 쪽이든 I11 (1)의 `git diff --exit-code` 검사로 고정 |
+| `tools/check_skill_portable.py`(stdlib) | — | S | I1·I2·I3(허용 목록 내장)·I4·I5·I6·I7·I9의 grep/길이 검사 + I11 (1) 복사·diff; ee-skills `tests/test_repo.py` frontmatter 패턴 |
+| `install-guidance.md`(호스트별 설치 한 절 + "그 외 에이전트: SKILL.md를 읽고 `ai-eda`를 실행하라" + Windows 심링크 절) | 사람·기타 에이전트 | M | 레포 전용, 판매본 제외 |
+| `.claude-plugin/plugin.json`·`marketplace.json`, `.codex-plugin/plugin.json`, `.opencode/opencode.json`, `.cursor/rules/*.mdc`, `GEMINI.md`, `llms.txt`, 루트 `plugin.json` | — | S | **만들지 않음** — kicad-happy에서 이 파일들은 원본이 `skills/`에 있어서 필요했고(포인터), 마켓플레이스 배포는 요청된 적 없음. §8 판매/마켓플레이스가 실제로 요구할 때만 추가 |
+| `action.yml` + `action/entrypoint.sh`(GitHub Action, 에이전트 없는 경로) | CI | M–L | **보류** — 러너에 KiCad·ngspice가 없으면 전부 NOT_VERIFIED(§1.2); ubuntu 러너의 headless KiCad 설치 UNVERIFIED |
+
+최소 집합 = 위 2–3행(`openai.yaml` + `.claude/skills/` 링크/복사) + 검사 스크립트. 호스트 수 9+1, 파일 3개, 전부 S. description을 중복 보관하는 파일이 없으므로 생성기 불필요.
+
+### 9.4 엔진 API 폭 (J) — 참고 레포 `ai_eda/llm/`
+현재 사실(소스 읽기): 제공자는 `openrouter`·`claude`·`script`(fake)뿐(`router.py:53`), `anthropic:` 접두는 예약·거부(`router.py:55-57`); 모델 스펙은 `provider:model`(알려진 접두에서만 첫 `:` 분리), 핀은 `ir.requirements.llm_model_spec`(불일치 시 `--llm-allow-model-change` 없이는 거부); `billing!="subscription"`인 멤버가 하나라도 있으면 `--llm-budget-usd/--llm-budget-tokens` 필수(`PAID_API_CALL`), 구독은 `SUBSCRIPTION_USE`. 파이프라인 호출 4곳(requirement·component·datasheet_facts·regulatory)은 전부 `LLMService.structured`, 도구·스트리밍 없음; `supports_structured=False`면 JSON-only 시스템 메시지로 대체(`service.py:624-627`). `OPENAI*` 식별자는 어디에도 없다. `OPENROUTER_BASE_URL`을 다른 게이트웨이로 돌리면 아마 돌지만 핀 이름이 `openrouter`로 남고, OpenAI 본가는 `usage` 바디 키를 400으로 거부할 가능성(UNVERIFIED).
+
+| # | 항목 | 제안(가장 작은 변경) | 비용 | 측정 가능한 PASS 조건 |
+|---|---|---|---|---|
+| J1 | `openai` 제공자(OpenAI 호환 `base_url`+키) | `ai_eda/llm/openai_compat.py`: `class OpenAICompatClient(OpenRouterClient)`, `OPENAI_API_KEY`/`OPENAI_BASE_URL`(기본 `https://api.openai.com/v1`), 바디에서 `usage`/`reasoning`/`provider` 제거, 헤더에서 Referer/Title 제거, `check_base_url` 유지(루프백 http 허용 = Ollama `127.0.0.1:11434/v1`, LM Studio `:1234/v1`, OmniRoute). 생성자 인자 `supports_structured: bool = True`(J5). 이름표 6곳 등록(`router.py:53,70-76`, `providers.py:45-52,194,392-406`, `cli.py:196,228-234,375-376`) | S (~150줄 + 6줄) | `tests/test_openai_compat_client.py`를 `tests/fake_openrouter.py`로: (1) `complete`가 내용을 돌려주고 기록된 바디에 `usage/reasoning/provider`·`HTTP-Referer` 없음; (2) `LLMService.from_env(LLMBudget(max_tokens=N), providers=["openai"])`가 `structured(REQUIREMENT_ANALYSIS, …)`를 서빙하고 `via="openai"`, `model_used="openai:<served>"` 기록; (3) `ai-eda run … --llm openai --llm-budget-tokens 2000`이 `tests/test_cli_llm.py:61-77`과 같은 흐름; (4) `tests/test_providers.py:137` 갱신, 기존 llm 스위트 통과 |
+| J2 | `anthropic` 직접 Messages API | 예약 해제(`router.py:55-57`, `tests/test_providers.py:121`), `x-api-key`/`anthropic-version`, 구조화 출력은 강제 tool, `usage.input/output_tokens`, 비용 `None`, 새 fake 서버 | M (~200줄) | **낮은 우선순위**: Anthropic은 이미 `openrouter:anthropic/*`·`claude:`로 닿음. 열 때 PASS = J1 (1)(2)와 같은 형태를 fake Anthropic 서버로 |
+| J3 | 과금·승인 규칙 불변 | J1은 `paid=True, billing="per_call"` → 예산 플래그가 곧 승인; 대부분의 호환 서버는 `cost`를 안 주므로 `--llm-budget-tokens`가 구속 예산(`service.py:36-38`) | 0 | (1) 예산 없이 `structured` → `ApprovalRequiredError`이고 `fake.requests`가 빔(`test_llm_service.py:71` 패턴); (2) `cost` 없는 응답 + USD만 있는 예산은 두 번째 호출 거부(`:103` 패턴) |
+| J4 | 핀·스펙 | `openai:<model>` 스펙·핀·`--llm-allow-model-change` 동작이 `openrouter:`와 동일; 접두 없는 스펙은 기본(첫) 제공자 | 0 | 핀 불일치 실행이 플래그 없이 거부; `describe_providers` 행에 "key set" 표시(GUI `gui/server.py:202`가 읽음) |
+| J5 | 구조화 출력 폴백 | 호환 서버의 strict `json_schema` 지원은 대상마다 UNVERIFIED → J1 생성자 인자 `supports_structured=False`로 기존 JSON-only 경로 사용. **새 env·CLI 플래그 없음**(노출은 실제 거부 사례가 나올 때) | J1에 포함 | `supports_structured=False`로 만든 클라이언트의 기록 바디에 `response_format` 없음 + JSON-only 시스템 메시지 존재 + 응답 파싱 성공 |
+| J6 | `doctor` 줄 | `LLM key: OPENROUTER_API_KEY not set / OPENAI_API_KEY set (base_url=…)`; `--online`에서 `{base_url}/models` 조회는 선택 | S | 네트워크 없이 키 유무·base_url만 인쇄; `--strict`는 키 없음을 실패로 치지 않음(현재와 동일) |
+| J7 | Windows `claude` 제공자(A8) | 변경 없음, A8 묶음에서 처리: 자식 종료 경로 `WinError 87`, 인코딩 불가 인수 분류 `'http'≠'transport'`, stdin 경로 미측정(§2.6) | §3.1 A8 | A8의 PASS 조건 그대로; 그 전까지 스킬은 "`--llm claude`는 Windows에서 미측정"이라고만 말한다 |
+
+**덮는 API(J1 뒤)**: OpenRouter(게이트웨이가 받는 모든 모델), OpenAI, Groq, Together, DeepSeek, Ollama·LM Studio(로컬), Gemini(OpenAI 호환 엔드포인트), OmniRoute 같은 자체 게이트웨이, Anthropic(`openrouter:anthropic/*`·`claude:`; 직접은 J2). 그 밖의 OpenAI 호환 서버는 대상별 UNVERIFIED(J5 폴백으로 시도). Azure OpenAI는 `api-key` 헤더 + `api-version` 쿼리가 필요해 J1에 ~15줄 추가(M로 승격, 요청 있을 때).
+**밖에 두는 것**: 벤더별 네이티브 SDK(비용 L, 이득 없음), AWS Bedrock·Google Vertex 네이티브 인증(SigV4/OAuth — 게이트웨이를 통해서만), 도구 호출·스트리밍(파이프라인이 안 씀), `codex exec` 서브프로세스 제공자(`claude_cli.py`와 같은 구독형; Codex의 JSON 스키마 출력 지원 UNVERIFIED → 사용자가 원하면 별도 항목).
+
+### 9.5 검증 계획
+스모크 매트릭스 = 호스트 × 과제 2개. 모두 이 PC, 빈 작업 디렉터리, 새 세션.
+- **T1 발견·로드**: (a) "what skills are available?" → `eda-engineer` + description이 1회 보임(I11); (b) description 키워드 하나가 든 프롬프트 → 본문이 로드됨(호스트의 활성화/동의 표시 또는 **본문에만 있는 문구**(예: "ai-eda 명령을 처음 쓰기 직전에 `doctor --strict`") 인용); (c) 대화 기록 grep `\$ARGUMENTS|\$\{CLAUDE_|Read tool` = 0건(I2·I3 누수).
+- **T2 실제 과제**: §4 6단계 과제 1(분배기 재설계)을 그대로. PASS는 §4 6단계와 동일(보고한 단계 상태 = `pipeline.json` `state.outcomes[]`, pipeline.json에 없는 PASS 0회) + 외부 행위를 먼저 하지 않음(I8).
+
+| 호스트 | 이 PC 설치 | T1 | T2 | 필요한 결정 |
+|---|---|---|---|---|
+| Claude Code | 있음(이 세션) | 필수 | 필수 | 없음(`.claude/skills/` 링크/복사가 레포에 있음) |
+| Codex CLI | 있음(§1.3; `~/.agents/skills/` 전역 설치 여부 UNVERIFIED) | 필수 | 필수, 단 요약 입력(128k 한계, §1.3) | 없음 — 레포의 `.agents/skills/`를 루트까지 탐색하므로 체크아웃이 곧 설치(C3 전역 복사 불필요) |
+| Gemini CLI / Antigravity / Cursor / OpenCode / Copilot CLI / Amp / Roo / Devin | **UNVERIFIED — 미확인**(`Get-Command gemini,cursor,opencode,copilot,amp` 미실행) | 설치된 것만 | 설치된 것만 | 설치는 `system_install` 외부 행위(§3.3) → 사용자 결정; 권고: 사용자가 실제로 쓰는 1–2개만 |
+| Cline / Kiro | 미확인 | — | — | 측정 전까지 미지원; 설치 결정 시 `.cline/skills/`·`.kiro/skills/` 복사를 I11 (1) 검사에 추가 |
+
+CI 없는 검사: `python tools/check_skill_portable.py`와 `skills-ref validate`를 푸시 전에 손으로 돌리고 결과 줄을 커밋 메시지에 붙인다. GitHub Action은 보류(§9.3 표). 9.5 결과는 `notes/measurements/<날짜>/hosts.md`에 호스트·버전·T1/T2 결과 한 줄씩(§3.5 B1의 측정 기록 형식).
+
+### 9.6 순서 (§4에 끼워 넣는 위치)
+1. **I1–I11 → §4 6단계 SKILL.md 초안 전**: §3.3 표에 "이식성" 행으로 합류(초안 작성 규칙이지 사후 검사가 아님). §3.3의 스킬 경로를 `skills/eda-engineer/` → `.agents/skills/eda-engineer/`로 고친다. 회의 #4(§4 5단계)에서 Codex 검토 1라운드.
+2. **어댑터 2개(`openai.yaml`, `.claude/skills/` 링크/복사) + `check_skill_portable.py` → 초안과 같은 커밋**, §4 7단계 푸시 전. Windows 심링크 가능 여부는 이때 측정해 결과(심링크/복사)를 9.3 표에 기록.
+3. **9.5 스모크 매트릭스 → 초안 뒤**, §4 6단계 시험에 "호스트 2개(Claude Code·Codex)" 추가; I12 발동 시험도 두 호스트에서. 나머지 호스트는 사용자 설치 결정 뒤 같은 표로 추가 측정.
+4. **J1(J5 포함) + J3·J4·J6 → 참고 레포 PR**, §4 2단계(A5) 뒤·3단계와 병행 가능(겹치는 파일 없음: `llm/`·`cli.py`의 제공자 표 6줄만). PASS 6건(J1 4 + J3 2) 전부 fake 서버로, 실제 키 불필요. J2는 요청 있을 때, J7은 A8 묶음(§4 4b).
+5. 스킬 문서(`answers.md`의 `--llm` 행)는 J1이 참고 레포에 머지된 **뒤에만** `openai`를 언급(§7.5 "구현 전 문서화 없음"과 같은 규칙); 그 전 초안은 `openrouter|claude`만.

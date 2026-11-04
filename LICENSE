@@ -1,0 +1,48 @@
+EDA_Engineer Skill — Proprietary License (Source-Available, No-Use)
+Copyright (c) 2026 Yuchan (github.com/Yuchan-00). All rights reserved.
+
+1. Scope. This license covers every file in this repository (the "Work"):
+   SKILL.md, references/, notes/, scripts/, and all other content.
+
+2. Viewing only. You may view the Work as published in this repository.
+   No other right is granted. In particular, without the prior written
+   permission of the copyright holder you may NOT:
+   a. use the Work, or any part of it, in or with any AI agent, assistant,
+      model, tool, or software, including loading it as a "skill",
+      "prompt", "instruction", "rule", or "context";
+   b. copy, reproduce, modify, translate, or create derivative works;
+   c. distribute, publish, sublicense, sell, rent, or otherwise make the
+      Work available to any third party, in whole or in part;
+   d. remove or alter this license, any copyright notice, or any purchase
+      or license identifier embedded in the Work.
+
+3. Authorized use. A license to use the Work is granted only through a
+   purchase or subscription on an authorized marketplace (for example
+   agensi.io) or by a separate written agreement with the copyright holder.
+   Such a license is personal to the purchaser, non-transferable, and
+   subject to the marketplace's terms; it does not permit redistribution.
+
+4. Third-party material. Ideas and structure in the Work may have been
+   informed by MIT-licensed projects (see NOTICE). Any verbatim text copied
+   from such projects keeps its own license and copyright notice as listed
+   in NOTICE; this license applies to everything else.
+
+5. No warranty. THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+   The Work describes an engineering method; it does not replace
+   measurement, simulation evidence, standards, datasheets, or a qualified
+   engineer's review, and the copyright holder is not liable for designs
+   made with it.
+
+6. Enforcement. Unauthorized use is copyright infringement. The copyright
+   holder may pursue takedown (including DMCA notices to hosting services
+   and marketplaces) and any other remedy available by law.
+
+7. Reservation. All rights not expressly granted are reserved. "View" in
+   section 2 means reading the published repository with a web browser or
+   a git client; it never includes feeding the Work to an AI agent.
+
+Korean summary (영문이 우선함): 이 저장소의 모든 내용은 저작권자의 소유이며
+열람만 허용됩니다. 서면 허가 없이 AI 에이전트·도구에 스킬/프롬프트/규칙으로
+불러오는 것을 포함한 어떠한 사용, 복제, 수정, 배포도 금지합니다. 사용권은
+agensi.io 등 승인된 마켓플레이스의 구매·구독 또는 별도 서면 계약으로만
+부여됩니다. 무단 사용은 저작권 침해이며 DMCA 등으로 대응합니다.
