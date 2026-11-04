@@ -1,0 +1,21 @@
+non-inverting opamp with kicad_builtin_opamp (M10)
+v1 in 0 dc 0 ac 1
+vcc vcc 0 dc 12
+vee vee 0 dc -12
+x1 in fb vcc vee out kicad_builtin_opamp
+r1 fb 0 1k
+r2 out fb 10k
+.subckt kicad_builtin_opamp in+ in- vcc vee out params: POLE=20 GAIN=20k VOFF=10m ROUT=10
+  Voff in+ inoff dc {VOFF}
+  G10 0 int inoff in- 100u
+  R1 int 0 {GAIN/100u}
+  C1 int 0 {1/(6.28*(GAIN/100u)*POLE)}
+  Eout 2 0 int 0 1
+  Rout 2 out {ROUT}
+  Elow lee 0 vee 0 1
+  Ehigh lcc 0 vcc 0 1
+  Dlow lee int Dlimit
+  Dhigh int lcc Dlimit
+  .model Dlimit D N=0.01
+.ends
+.end

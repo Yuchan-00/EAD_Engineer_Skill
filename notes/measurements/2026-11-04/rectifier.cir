@@ -1,0 +1,10 @@
+bridge rectifier + C filter (M6)
+v1 ac1 ac2 sin(0 17 50)
+d1 ac1 out dr
+d2 ac2 out dr
+d3 0 ac1 dr
+d4 0 ac2 dr
+.model dr d(is=1e-9 rs=50m n=1.8 cjo=10p bv=100)
+c1 out 0 1000u
+r1 out 0 100
+.end

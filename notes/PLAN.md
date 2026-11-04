@@ -343,7 +343,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 **순서·비용·위치**
 | 묶음 | 내용 | 전제 | ~줄 |
 |---|---|---|---|
-| D9a | `lc_lowpass, i2c_pullup, bjt_lowside_switch` + 새 키 3개 (전부 기존 패턴: R·L·C 값 소자, QNPN 카드) | M7 | ~1,400 |
+| D9a | `Reduce.PP`·`Reduce.MEAN` 추가(M7) + `lc_lowpass, i2c_pullup, bjt_lowside_switch` + 새 키 3개 (전부 기존 패턴: R·L·C 값 소자, QNPN 카드) | M7 완료(미비 확인) | ~1,500 |
 | D9b | `opamp_noninverting, rectifier_cfilter` + 새 키 3개 | M6·M10 | ~1,050 |
 | D9c | README/GUI 수치, 측정 기록, 전 9개 ERC 실측 | D9a·b | ~150 |
 | 합계 | 신규 템플릿 5, 계산기 ~20, 테스트 ~35(ngspice 5, ERC 9) | | **≈2,600줄**, 2–3 PR |
@@ -360,6 +360,14 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 | M8 | kicad-cli ERC 1건 소요 시간(9건 예산) | 전체 | 1회 실행·시간 기록 |
 | M9 | 비RF 새 키에 추출 프롬프트 테스트가 요구되는지(`test_rf_requirement_keys.py:245`의 비RF 대응물) | 새 키 6개 | grep |
 | M10 | `kicad_builtin_opamp` `.subckt`(레일 제한 D 포함)가 자급 카드로 컴파일되고(`spice.py:369-375`, `SpiceDevice.X`) AC 해석이 수렴하는지 | opamp_noninverting | 덱 1개 |
+
+**측정 결과(2026-11-04, 이 PC; 덱·출력은 `notes/measurements/2026-11-04/` `rectifier.cir`, `opamp.cir`, `templates-measurements.md`)** — tier-1 5개 전부 유지:
+- **M1 통과**: 라이브러리 로더가 `extends`를 재귀로 해석한다(`tools/kicad/library.py:12,353-377,609`). 실측: `BC547`(←Q_NPN_CBE) 핀 C/B/E, `1N4148`(←1N4001) K/A, `IRLZ44N`(←BUZ11) G/D/S, `LM358`(←LM2904) 8핀, `2N3904`(←Q_NPN_EBC) E/B/C 전부 정상.
+- **M6 통과**: 브리지 4D(손 카드 `d(is=1n rs=50m n=1.8 cjo=10p bv=100)`) + 1000 µF + 100 Ω, 17 Vpk 50 Hz, `tran 50u 200m` 수렴(4,012점). 정상 상태 평균 14.56 V, 리플 1.19 Vpp(계산식 I/(2fC) ≈ 1.46 V와 같은 자리), **돌입 전류 5.13 A(1 ms) vs 정상 1.51 A** → 돌입·PIV "표시만" 행이 측정 가능.
+- **M7 미비 → D9a 전제 추가**: 축약은 VALUE/AT/FINAL/MAX/MIN/FREQUENCY/DB_AT/RMS/DB_RMS/HARMONIC_DBC/AM_DEPTH 11종(`ir/simulation.py:251-297`)이고 **PP(피크-피크)·MEAN이 없다.** 리플은 MAX·MIN 두 기대값으로 쓸 수 있으나 "리플 ≤ 요구값" 한 행이 더 읽기 쉽고, 스위치 ON 전압은 MEAN 또는 AT(시각)이 필요 → `Reduce.PP`·`Reduce.MEAN` 추가(계산·테스트 각 S)를 D9a에 넣는다.
+- **M8 통과**: `kicad-cli sch erc --severity-all` 1건 7.2 s(심볼 3개 보드) → 9개 보드 ERC 실측 예산 ≈ 1–2분.
+- **M9 통과(요건 없음)**: 추출 프롬프트 키 커버리지 테스트는 RF 키에만 있다(`tests/test_rf_requirement_keys.py:245`); 비RF 키는 프롬프트 34행의 예시 목록("input_voltage, output_voltage, … ,")에 추가하는 것이 선택 사항일 뿐 테스트 요건이 아니다.
+- **M10 통과**: `kicad_builtin_opamp`(Holger Vogt, Public Domain, `Simulation_SPICE.sp:10-31`) `.subckt`를 `params:`·`{식}` 포함 그대로 인라인한 비반전 증폭기(R1 1 kΩ, R2 10 kΩ, ±12 V)가 래퍼 검증을 통과하고 `ac dec 10 1 1meg` 수렴: |out/in| = 10.99(20.82 dB) @10 Hz–1 kHz, 10.60 @10 kHz, 3.75 @100 kHz(매크로 GBW = GAIN·POLE = 400 kHz / 11 ≈ 36 kHz와 일치). 저주파 이득 기대값 PASS 가능, 대역은 모델 파라미터 유도라 "표시만".
 
 **E: 프로그래머블 소자**(단계·도구는 7.2 표)
 
