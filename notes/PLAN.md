@@ -225,6 +225,21 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 7b. **판매 등록**(§8.5): 법률 플래그 (d) 확인 → LICENSE/NOTICE 최종 → agensi 등록(zip = SKILL.md + references 3 + scripts). 직접 판매를 병행하면 H3·H4.
 8.–11. **확장(§7.4)**: §7.4의 순서(D1→D4→D3→D6; E1→E3→E2(+E4); 측정 뒤 E5/E6)를 따른다. 1–7이 끝난 뒤에만.
 
+### 4.1 작업 루프 (파이프라인, 2026-11-04 세팅)
+항목(A5, B11, D9a …) 하나마다 같은 순서로 돈다. 도구는 `B:\0) AI_Project\scripts\`에 있고, 참고 레포는 `work/ead-skill` 브랜치(main `4ee4d8e`에서 분기, 직접 커밋 금지 규칙은 main에만)에서 작업한다.
+
+| 단계 | 명령 / 산출물 | 끝 조건 |
+|---|---|---|
+| 1 브랜치 | `git -C AI_EDA_Engineer checkout work/ead-skill`(항목이 크면 `work/<항목>`) | 깨끗한 작업 트리 |
+| 2 구현 | ponytail: 가장 작은 완전한 변경 + 그 테스트 | 코드와 테스트가 같이 있음 |
+| 3 빠른 테스트 | `scripts\aieda-test.ps1 quick`(IR·workdir·템플릿·leave_out·회로도 컴파일러, ≈1분) 또는 `files tests/…` | 실패 0 |
+| 4 Codex 리뷰 | `scripts\codex.ps1 review -Dir ..\AI_EDA_Engineer "<초점>"`; 설계 결정이면 `scripts/rn_meet.sh msg.txt prompt.txt out.txt`(Reason Network 1라운드) | 지적마다 반영 또는 거부 이유 |
+| 5 전체 테스트 | 닿은 영역이 넓으면 `scripts\aieda-test.ps1 full`(≈15분, A7 deselect 포함) | 기준선(13 failed, §3.1-b)보다 나빠지지 않음 |
+| 6 측정 기록 | 로그 요약·덱을 `notes/measurements/<날짜>/`에 README 헤더 형식으로 | 뒷받침하는 plan 행 id 명시 |
+| 7 커밋 | 참고 레포: 항목 id로 시작하는 메시지, Co-Authored-By 줄; plan은 EAD_Engineer_Skill에 같이 | 결정 ①=(a)면 PR, (b)면 브랜치에만 |
+
+세팅 검증(2026-11-04): `codex.ps1 ask`가 참고 레포에서 정답(`ai_eda`, tests 125개)을 돌려줌(exit 0, `auto/best-coding`); `aieda-test.ps1 quick` 기준선 = **3 failed / 130 passed / 7 skipped, 36.6 s**(실패 3건은 전부 알려진 것: A3 astable ×2, A8 `test_leave_out` 인용 — 이보다 나빠지면 회귀); reason-network 바이너리는 `.tools/reason-network/`(zip sha256 `1789e0b4…`에서 추출, gitignore)로 옮겨 세션에 묶이지 않게 함. 로그는 `.logs/`(gitignore).
+
 ## 5. Codex 검토 의견 (회의 #1, 2026-11-04, reason-network)
 전문: `notes/meetings/2026-11-04-meeting-1.md`. 요지:
 - **WRONG으로 지적, 수용**: R4 "모든 과제의 첫 명령 = doctor"는 과함 → "과제를 이해한 뒤, ai-eda 명령을 처음 쓰기 직전에 `doctor --strict`"로 수정. A3는 원인 미확인 상태의 추정 → 완료 조건에 "원인 먼저" 명시. A2는 콘솔 인코딩 문제라 제품 결함이 아님 → 스킬은 찍힌 파일명에 의존하지 않고 exit code와 JSON만 읽는다(수용; 참고 레포 수정 없음 — §3.1 A2).
