@@ -7,3 +7,5 @@
 - `blink.c` — simavr VCD 실측용 ATmega128 펌웨어. 빌드/실행(PlatformIO 패키지 경로):
   `avr-gcc -mmcu=atmega128 -Os -I<tool-simavr>/include/simavr -o blink.elf blink.c` → `simavr -m atmega128 -f 16000000 blink.elf` → `blink.vcd`(401 에지, 에지 간격 ≈ 501 µs).
 - 전체 pytest 로그는 크기 때문에 넣지 않음(요약은 PLAN.md §3.1-b).
+- `selftest-divider.kicad_sch` — `ai-eda selftest --dir <tmp> --keep`가 만든 분배기 회로도(B11 기준: 심볼 3, 스텁 wire 7, global_label 7, junction 0, 심볼 간 배선 0).
+- `env.txt` — 참고 커밋, Python, `ngspice.dll` sha256, `ai-eda doctor --strict` 전체 출력.
