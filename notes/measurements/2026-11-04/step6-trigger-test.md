@@ -53,7 +53,7 @@ NOT_VERIFIED를 PASS로 바꾼 사례: 샘플 확인(P1·P5·P8 답변 꼬리)�
 
 ### 음성 5건 재실행
 
-**미측정(2026-11-05 00:21 기준)**: 23:13부터 00:21까지 2분 간격 20회 sanity 호출("Reply with the single word OK")이 전부 `ERROR: Reconnecting... waiting for network` → Codex의 모델 경로(OmniRoute `auto/best-coding`)가 1시간 넘게 끊김. 러너 `rerun_negatives.sh`는 경로가 돌아오면 5건을 돌리고 `summary-negatives.txt`에 쓰도록 되어 있어 다음 세션에서 다시 실행한다. 채점 기준: 전사에 `eda-engineer` 언급·`SKILL.md` 읽기·`ai-eda`/`confirm_design` 사용이 **없으면** 미발동(PASS).
+**미측정(2026-11-05 00:21 기준)**: 23:13부터 00:21까지 2분 간격 20회 sanity 호출("Reply with the single word OK")이 전부 `ERROR: Reconnecting... waiting for network` → Codex의 모델 경로(OmniRoute `auto/best-coding`)가 1시간 넘게 끊김. 인터넷 자체는 살아 있음(00:24: github.com 200, api.openai.com 421 응답) → OmniRoute 쪽 장애. 러너 `rerun_negatives.sh`는 경로가 돌아오면 5건을 돌리고 `summary-negatives.txt`에 쓰도록 되어 있어 다음 세션에서 다시 실행한다. 채점 기준: 전사에 `eda-engineer` 언급·`SKILL.md` 읽기·`ai-eda`/`confirm_design` 사용이 **없으면** 미발동(PASS).
 
 ### 요약
 
