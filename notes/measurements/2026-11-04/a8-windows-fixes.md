@@ -17,4 +17,9 @@
 
 Codex 리뷰(13cdb5b) 반영(후속 커밋): POSIX에서 역슬래시 경로는 bare로 쓰지 않음; Windows에서 `$`·백틱·`%`·`"`·셸 연산자가 든 경로는 `"…"` 대신 PowerShell `'…'`(cmd.exe는 못 읽음 — 독스트링에 명시); 본문 소진 읽기에 2초 소켓 타임아웃(`DRAIN_TIMEOUT_S`); 인용 규칙 단위 테스트 1개 추가(OS별 6경우).
 
-남은 A8 실패(Windows 분기로 처리할 것): `test_claude_cli_client` 2건(자식 종료 경로 WinError 87, 인코딩 불가 인수 분류), `test_report_pdf` snap 판정, `test_md_review_findings_regressions::test_7`(벽시계 동일성).
+남은 A8 실패 4건 처리(18:38–18:39, 커밋 02c5c78 + 다음 커밋):
+- `test_report_pdf::…snap…`: `is_snap()`이 `str(path)`로 `/snap/` 접두를 보다가 Windows에서 `\snap\…`가 되어 False → **제품 수정** `as_posix()` 비교(POSIX에선 동일).
+- `test_claude_cli_client` 자식 종료 확인: `os.kill(pid, 0)`은 Windows에 시그널 0이 없어 상태와 무관하게 WinError 87 → 테스트 helper `_assert_gone(pid)`(POSIX는 그대로, Windows는 `OpenProcess`+`GetExitCodeProcess`≠259).
+- `test_claude_cli_client` 인코딩 불가 인수: Windows는 고립 서로게이트를 UTF-16 그대로 CreateProcessW에 넘겨 자식이 **시작**되므로(exit 코드 → kind "http") 그 케이스는 POSIX 전용; Windows에선 NUL만 거부 인수. 테스트 분기.
+- `test_md_review_findings_regressions::test_7`: "나중 created_at"을 시계에 맡겨 같은 틱(Windows `datetime.now` 1–16 ms)에 만든 픽스처와 같아짐 → 테스트가 created_at = 픽스처 + 1 s 를 명시.
+- 재실행: `test_claude_cli_client.py` + `test_report_pdf.py` 107 passed / 10 skipped (26 s); `test_md_review_findings_regressions.py` 84 passed / 1 skipped. → **Windows 기준선에서 A8 실패 0건**; 남은 기준선은 A3 ×2(astable 3 V 코너)·A9 ×2(AM depth)·KR447 시간 예산(부하 의존).
