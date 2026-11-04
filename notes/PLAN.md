@@ -363,7 +363,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 |---|---|---|---|
 | D9a | ✅(부분, 2026-11-04 `work/ead-skill`) `Reduce.PP`·`Reduce.MEAN`(75ad38e) + **`lc_lowpass`**(fece446 + 등록·이론·부품 노트·종단 선택값 커밋; ngspice 코너 PASS·음성 대조·ERC·결정성 통과, 실제 CLI 2-run으로 끝까지 확인, `notes/measurements/2026-11-04/d9a-lc-lowpass.md`) + **`bjt_lowside_switch`**(3bf314c, 같은 날 저녁; 새 키 `max_voltage_drop`, 계산기 3개, 부하는 정전류 싱크 스티뮬러스(코일이 아닌 단순화 모델로 명시), 한계 기대값 2개; 6 테스트 첫 실행 통과, CLI 2-run 통과, Codex 리뷰 4건 반영/검증, `d9a-bjt-lowside-switch.md`) — **남은 것**: `i2c_pullup` + 새 키 2개(`bus_capacitance`·`bus_rise_time`). **i2c_pullup 전제(설계 중 발견)**: 버스 용량은 보드 부품이 아니라 배선의 성질이라 "시뮬레이션 전용 소자"(넷리스트에는 들어가고 BOM에는 안 들어가는 C)가 IR에 필요하다 — 현재 `SpiceBinding`은 부품에만 붙고 제외 부품은 시뮬레이션에서 빠지므로, (a) `in_bom=False` 부품 개념 또는 (b) `SimulationSetup`에 시뮬레이션 전용 요소를 두는 결정이 먼저(사용자 결정 ⑯). 개방 드레인은 `Stimulus(source="current", kind=PULSE)`로 모델 가능(확인). | M7 완료 | ~1,500 (완료 ~1,000) |
 | D9b | `opamp_noninverting, rectifier_cfilter` + 새 키 3개 | M6·M10 | ~1,050 |
-| D9c | README/GUI 수치, 측정 기록, 전 9개 ERC 실측 | D9a·b | ~150 |
+| D9c | README/GUI 수치, 측정 기록, 전 9개 ERC 실측 — **부분 2026-11-04**: 내장 7종 일괄 실측(`d9c-erc-sweep.md`): 6종 ERC 0/0, ATmega만 `Input Power pin not driven` 3건 = 회로도 컴파일러의 PWR_FLAG/`power:*` 심볼 미구현(참고 레포 ARCHITECTURE "아직 아닌 것" 3번; 회귀 아님) → **새 항목 B12: POWER/GROUND 넷에 PWR_FLAG emit**(S–M, B11 W3와 같은 파일) | D9a·b | ~150 |
 | 합계 | 신규 템플릿 5, 계산기 ~20, 테스트 ~35(ngspice 5, ERC 9) | | **≈2,600줄**, 2–3 PR |
 
 - §4 위치: 8단계 D9이지만 **D9a는 4b–6단계와 병행 가능** — 닿는 파일이 `design/catalog/`, `tools/calc/*`, `requirements/inputs.py`, `tests/test_catalog_*.py`, README·`gui/page.py`뿐이라 A5(`cli.py`·`workflow/orchestrator.py`)·B11(배선 컴파일러)과 겹치지 않는다. 단 **`TEMPLATES` 등록은 B11 W1 머지 뒤**(B11 PASS 집합이 커지지 않도록).
