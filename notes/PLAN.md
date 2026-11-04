@@ -132,7 +132,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 
 | # | 문제 | 근거 | 제안 |
 |---|---|---|---|
-| A8 | Windows에서 실패하는 테스트 9개(위 표) — 제품 결함은 그중 보고서 답 명령 인용(`report/data.py:390,395`; cmd.exe에서 안 도는 명령을 보여 줌)과 두 서버의 본문 미수신 거부(클라이언트에 10053) | 첫 Windows 전체 실행 | 각 테스트를 "Windows에서 기대값 분기"로 고치지 말고 제품 쪽을 먼저 본다: 답 명령은 Windows면 따옴표 없이(또는 PowerShell 규칙), 서버는 거부 전에 본문을 읽고 버린다. 나머지(claude.exe 종료 경로, snap 판정, 벽시계 동일성)는 Windows 분기 |
+| A8 | **제품 결함 2건 구현됨 2026-11-04(`work/ead-skill`, A8 커밋)**: 보고서 답 명령은 `shell_path()`(평범한 경로는 따옴표 없이, 공백 등이 있으면 Windows는 `"…"`, 그 외 shlex), GUI 서버는 거부 전에 본문을 읽어 버림(10053 해소; 해당 테스트 통과) — Windows에서 실패하는 테스트 9개(위 표) — 제품 결함은 그중 보고서 답 명령 인용(`report/data.py:390,395`; cmd.exe에서 안 도는 명령을 보여 줌)과 두 서버의 본문 미수신 거부(클라이언트에 10053) | 첫 Windows 전체 실행 | 각 테스트를 "Windows에서 기대값 분기"로 고치지 말고 제품 쪽을 먼저 본다: 답 명령은 Windows면 따옴표 없이(또는 PowerShell 규칙), 서버는 거부 전에 본문을 읽고 버린다. 나머지(claude.exe 종료 경로, snap 판정, 벽시계 동일성)는 Windows 분기 |
 | A9 | ngspice-43/46의 AM·SFFM 소스 파라미터 변경으로 AM 테스트 2개 실패 | NEWS + 이 PC 측정(위 표) | A3과 함께 "ngspice 버전 앵커" 작업으로 묶는다: 매뉴얼로 새 파라미터 의미 확인 → 컴파일러가 엔진 버전에 따라 순서를 쓰거나, 46 이상만 지원한다고 선언. 참고 레포의 앵커는 ngspice-42(소스·문서에 177회 언급, 46은 36회) → 42→46 사이의 변경이 원인 범위 |
 
 ### 3.2 설계/구현 보완점 (코드 읽기 + 그래프 분석에서 나온 것)
@@ -202,7 +202,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 | B1 | ✅ 925fb58 — (canary는 §3.1-b에서 통과) 기록 근거로 canary 테스트 node id 6개(§3.1-b 목록)와 그 PASSED 줄을 `notes/measurements/2026-11-04/`에 커밋하고 PR 본문에 복사(세션 scratchpad 로그는 사라진다; 측정 기록은 `notes/measurements/README.md`의 헤더 6줄 + `env.txt` 형식을 따른다 — 검토 1-4); 그 뒤 `PROJECT_RULES_MEASURED_VERSIONS` / `EXPORT_3D_MEASURED_VERSIONS`에 10.0.6 기록 후 `tests/test_fab_capability.py`의 monkeypatch 없이 `mfg.capability`가 PASS; 스킬의 pipeline.md는 그 측정 기준으로 동결 |
 | A7 | ✅ 925fb58 — `report/server.py`에 같은 규칙의 `_LoopbackServer`(GUI를 import하지 않으려고 복제), Windows에서 `test_serve_loopback_read_only_and_live` 통과 |
 | B11 W1 | ✅ 5a5e8a1 — 분배기 wire 22(스텁 7 + 배선 15), junction 1, ERC 0/0, DRC 0/0, parity 0; 라우터 테스트 8 + 컴파일러 배선 테스트 1 + 구조·렌더·GUI 테스트 적응; KR447·ATmega 컴파일·테스트 통과(배선 비율은 note로 보고: 22 %·23 % → W3) — 원래 조건: selftest 분배기 보드에서 넷 3개(`VIN`, `VOUT` 3핀+junction, `GND`) 전부 배선되어 심볼 간 `(wire` ≥ 3, `(junction` ≥ 1 (기준: §3.2 B11 측정, 현재 0/0); `test_compile_is_byte_deterministic`·`test_real_erc_passes_with_zero_errors`·`test_real_netlist_reproduces_ir_connectivity` 변경 없이 통과; 새 테스트 3개 — 배선 경로가 외부 핀을 지나는 구성은 그 넷 전체가 라벨로 후퇴하고(끊긴 배선 0) note를 남김, 배선 끝점이 외부 배선 위에 놓이는 구성은 CompileError, 일부러 선분 중간에서 교차하는 두 넷의 parity·ERC 불변; 렌더 테스트에 wire·junction 포함. ATmega128·KR447 보드도 컴파일·ERC 통과(배선/대상 넷 비율을 note로 보고, 임계값 4 조정 근거) |
-| A8/A9 | A8: 보고서 답 명령이 Windows에서 따옴표 없이 나오고 두 서버 테스트가 10053 없이 통과; 나머지는 Windows 분기로 통과. A9: 원인(ngspice-46 AM 소스) 확인 뒤 A3과 같은 버전 앵커 방식 |
+| A8/A9 | A8: ✅(제품 2건, 13cdb5b) 보고서 답 명령이 Windows에서 따옴표 없이 나오고 두 서버 테스트가 10053 없이 통과(`a8-windows-fixes.md`); 나머지 4건은 Windows 분기로 통과(남음). A9: 원인(ngspice-46 AM 소스) 확인 뒤 A3과 같은 버전 앵커 방식 |
 
 ## 4. 다음 단계 (천천히)
 1. **이 plan 검토** — 사용자 확인. 답이 필요한 결정(2단계 이후는 ①의 답 없이 시작하지 않는다):
@@ -214,11 +214,13 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
    ⑨ §7.4 (c)(d) 외부 설치: standalone ngspice-47, C 컴파일러·Verilator(비용: 설치 + 라이선스 경계 판단, §7.4 위험 표).
    ⑩ §3.3 권고 확인: `check_evidence.py`·`references/ir.md` 만들지 않음, SKILL.md 250줄 이하.
    ⑪–⑮ 판매·보호 관련 결정은 §8.4 끝의 목록(공개 시점, EULA, 판매 채널, 참고 레포 포함 여부, 법률 확인 담당).
+   ⑯ 시뮬레이션 전용 소자(배선 용량 등 BOM에 없는 C/R)를 IR에 어떻게 둘지 — (a) 부품에 `in_bom=False` 플래그 / (b) `SimulationSetup`의 전용 요소 목록(비용: 각각 S–M; i2c_pullup·D8의 포트 부하 모델이 필요로 함).
 2. ✅ 2026-11-04 `work/ead-skill` 925fb58(PR은 결정 ① 뒤; Codex 리뷰 P2·P3 반영) — **A5 수정 + A6 잔여 테스트 1개** (Codex 1순위였던 "A5+A6"의 축소판): run/review의 `IRSchemaError → exit 2` 매핑(시작 전 확인: README의 exit code 설명과 `tests/test_cli_llm.py`의 `assert code == 1`이 손상 IR이 아니라 질문 차단을 뜻하는지), `proposes nothing` 테스트(트리거: `plan.buildable`이 False인 plan — `agents/circuit.py:147-149` — 을 `design_from_requirements` monkeypatch로 만들고 `confirm_design=yes`를 준다). A6의 제품 코드 수정은 없음(테스트 1개만 추가); 사유 문자열 5개의 `answers.md` 수록은 6단계에서. 검증은 15분 전체 실행이 아니라 `pytest tests/test_ir.py tests/test_workdir_relocate.py tests/test_circuit_templates.py tests/test_leave_out.py`로.
 2b. ✅ 2026-11-04 `work/ead-skill` 5a5e8a1 (Codex 리뷰: 성능 3.7 s로 수용, 테스트 2건 추가) — **B11 W1+W2 회로도 배선** (사용자 요청 2026-11-04; Codex 회의 #3 "go with changes"): 토폴로지 순 배치 + 핀 ≤ 4 넷의 trunk 배선 + junction + 라벨 유지 + 기하 가드 예외 1개 + 테스트 3개 → PR. W3는 나중.
+2c. ✅(부분) **D9a** 2026-11-04: `Reduce.PP`/`MEAN`(75ad38e), `lc_lowpass` 템플릿 + 등록(fece446, 9368133) — 6번째 내장 템플릿이 실제 CLI에서 설계·검증됨. 남은 `i2c_pullup`은 결정 ⑯ 뒤, `bjt_lowside_switch`는 다음 세션.
 3. **B4 메시지 + B2/B9/B10 단계 의미론** (Codex 2순위).
 4. ✅ 925fb58에 포함 — **B1 기록 + A7 두 줄 수정** (Codex 3순위; canary는 §3.1-b에서 이미 통과): 측정 버전 상수에 10.0.6 기록, `report/server.py`에 `_LoopbackServer` 적용 → 참고 레포에 PR. 스킬 문서는 측정된 버전만 말한다.
-   4b. **A1 · A3 · A8 · A9**(스킬을 막지 않는 항목, §5 MISSING): A1 smoke test(§3.5); A3+A9는 원인 확인(§3.1 A3 명령, A9 매뉴얼 확인) 뒤 ngspice 버전 앵커로 함께; A8은 제품 쪽 2건(보고서 답 명령 인용, 본문 미수신 거부)을 먼저, 나머지는 Windows 분기. 5단계 이후와 병행해도 된다.
+   4b. ✅(A8 제품 2건, 13cdb5b) **A1 · A3 · A8 · A9**(스킬을 막지 않는 항목, §5 MISSING): A1 smoke test(§3.5); A3+A9는 원인 확인(§3.1 A3 명령, A9 매뉴얼 확인) 뒤 ngspice 버전 앵커로 함께; A8은 제품 쪽 2건(보고서 답 명령 인용, 본문 미수신 거부)을 먼저, 나머지는 Windows 분기. 5단계 이후와 병행해도 된다.
 5. **스킬 설계 회의 #3** (Codex와 reason-network; #2는 §7 검토로 이미 열렸다, §5): §3.3 확정. B1 기록(4단계) 뒤에 연다(문서가 "바라는 버전"이 아니라 측정값을 말하도록).
 6. **SKILL.md 초안** → 실제 과제 2개로 시험(분배기 재설계, 의도적으로 kicad-cli 없는 환경) → Codex review → 수정. PASS 조건: 두 과제 모두 스킬이 보고한 단계 상태가 `pipeline.json`의 `state.outcomes[]`와 일치하고, 스킬이 pipeline.json에 없는 PASS를 한 번도 주장하지 않으며, kicad-cli 없는 과제에서 ERC/DRC를 NOT_VERIFIED로 보고한다.
 7. **푸시**: EAD_Engineer_Skill에 커밋. AI_Project 레포에는 `scripts/rn_bridge.py`와 `.gitignore`만.
@@ -322,7 +324,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 | `led` | LED+직렬 R(#1) | input_voltage, led_forward_voltage, led_forward_current | 있음(`:655`) | 이상화(`exclude_reason=MODEL`+`VLED`) | 0 | 있음 | 동상 |
 | `rc_lowpass` | RC 1차 LPF(#17) | cutoff_frequency | 있음(`:838`) | R·C만 | 0 | 있음 | 동상 |
 | `astable` | BJT 비안정(#22) | oscillation_frequency, input_voltage | 있음 | `.model QNPN NPN(TR=200n)` 확인 선택 | 0 | 있음 | 동상 |
-| `lc_lowpass` | LC 2차 LPF(#31) | cutoff_frequency, system_impedance(RF 키 재사용) | L·C(Butterworth, Z0) → AC `\|H(fc)\|`=−3 dB, nominal=cutoff_frequency | R·L·C만 | 0 | ~400 | AC PASS; 2회 빌드 해시 동일; Z0·fc 범위 밖 거부 |
+| `lc_lowpass` ✅ | LC 2차 LPF(#31) — **구현·검증됨 2026-11-04**: 양단 Z0 종단(R1·R2 보드 위), `db_at`@f_c vs v_pass, nominal −3.0103 dB(`calc.lc.butterworth2.level_db`), ac 500점/decade | cutoff_frequency, system_impedance(RF 키 재사용) | L·C(Butterworth, Z0) → AC `\|H(fc)\|`=−3 dB, nominal=cutoff_frequency | R·L·C만 | 0 | ~400 (실제 ~330 + 테스트 120) | AC PASS(측정 −3.01 dB); L 2배 음성 대조 비-PASS; 2회 빌드 해시 동일; Z0·fc 범위 밖 거부; ERC 0 — 전부 통과; **`TEMPLATES` 등록·README/GUI 6종·이론·부품 노트까지 완료(9368133)**, 실제 CLI 2-run 확인 |
 | `i2c_pullup` | I2C 풀업(#11) | input_voltage, clock_frequency, bus_capacitance, bus_rise_time | R_max=t_r/(0.8473·C) (0.8473=ln(0.7/0.3), I2C 30/70 % 문턱 — 계산기 상수, `tool_version`으로 추적), R_min=(Vdd−V_OL)/I_sink(V_OL·I_sink 선택) → tran: t=bus_rise_time에서 `v(SDA)`≥0.7·Vdd, nominal=input_voltage·bus_rise_time | R·C+PULSE(개방 드레인 이상화) | `bus_capacitance` F, `bus_rise_time` s | ~450 | tran PASS; R_min>R_max면 USER_INPUT_REQUIRED(거부문에 수치) |
 | `bjt_lowside_switch` | BJT 로우사이드 스위치+환류 D(#10 릴레이, #5 저항 부하) | input_voltage(제어), output_voltage(부하 공급), output_current, max_voltage_drop | R_b=(Vctl−Vbe)/(Ic/β_forced)(Vbe·β_forced 선택, 표에 노출) → tran ON 구간 `v(C)` MEAN ≤ max_voltage_drop(한계=요구 키); 턴오프 `v(C)` MAX ≤ output_voltage+Vf(Vf 선택→표시만) | `.model QNPN NPN(BF=…)`+`.model DFW D` 확인 선택; 코일=R+L | `max_voltage_drop` V | ~550 | 포화 기대값 PASS; `i(load)`는 표시만(부하 R이 요구에서 정해져 항등식); 구동 부족은 거부가 아니라 FAIL로 드러남; Ic>정격 선택이면 거부 |
 | `opamp_noninverting` | 비반전 op-amp(#7) | gain, input_voltage(공급) | R2/R1=gain−1(E-series 선택, 실제 비는 계산기) → AC 저주파 `\|v(out)/v(in)\|`=gain, nominal=gain | `kicad_builtin_opamp` `.subckt` 본문(2.5 kB `.sp`, Public Domain) 인라인 확인 선택 — QNPN과 같은 경로, `spice.py:369-375`가 자급 `.subckt` 허용 | `gain` V/V | ~500 | AC PASS; 대역·슬루(POLE·GAIN 매크로 파라미터)는 표시만; gain<1 또는 출력 스윙>공급 거부 |
@@ -358,7 +360,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 **순서·비용·위치**
 | 묶음 | 내용 | 전제 | ~줄 |
 |---|---|---|---|
-| D9a | `Reduce.PP`·`Reduce.MEAN` 추가(M7) + `lc_lowpass, i2c_pullup, bjt_lowside_switch` + 새 키 3개 (전부 기존 패턴: R·L·C 값 소자, QNPN 카드) | M7 완료(미비 확인) | ~1,500 |
+| D9a | ✅(부분, 2026-11-04 `work/ead-skill`) `Reduce.PP`·`Reduce.MEAN`(75ad38e) + **`lc_lowpass`**(fece446 + 등록·이론·부품 노트·종단 선택값 커밋; ngspice 코너 PASS·음성 대조·ERC·결정성 통과, 실제 CLI 2-run으로 끝까지 확인, `notes/measurements/2026-11-04/d9a-lc-lowpass.md`) — **남은 것**: `i2c_pullup`, `bjt_lowside_switch` + 새 키 3개. **i2c_pullup 전제(설계 중 발견)**: 버스 용량은 보드 부품이 아니라 배선의 성질이라 "시뮬레이션 전용 소자"(넷리스트에는 들어가고 BOM에는 안 들어가는 C)가 IR에 필요하다 — 현재 `SpiceBinding`은 부품에만 붙고 제외 부품은 시뮬레이션에서 빠지므로, (a) `in_bom=False` 부품 개념 또는 (b) `SimulationSetup`에 시뮬레이션 전용 요소를 두는 결정이 먼저(사용자 결정 ⑯). 개방 드레인은 `Stimulus(source="current", kind=PULSE)`로 모델 가능(확인). | M7 완료 | ~1,500 (완료 ~1,000) |
 | D9b | `opamp_noninverting, rectifier_cfilter` + 새 키 3개 | M6·M10 | ~1,050 |
 | D9c | README/GUI 수치, 측정 기록, 전 9개 ERC 실측 | D9a·b | ~150 |
 | 합계 | 신규 템플릿 5, 계산기 ~20, 테스트 ~35(ngspice 5, ERC 9) | | **≈2,600줄**, 2–3 PR |
