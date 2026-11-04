@@ -140,8 +140,11 @@ Every summary you write for the user has these six sections, in this order:
 
 ## Running the CLI
 
-- `ai-eda` on PATH after the installer; otherwise `<repo>/.venv/Scripts/ai-eda.exe` (Windows) or
-  `<repo>/.venv/bin/ai-eda` (macOS, Linux); the system Python has no `ai_eda` module.
+- `ai-eda` is on PATH after the AI EDA Engineer installer; otherwise call it from that installation's
+  virtual environment, `<repo>/.venv/Scripts/ai-eda.exe` (Windows) or `<repo>/.venv/bin/ai-eda` (macOS,
+  Linux), where `<repo>` is the folder the AI EDA Engineer was installed into (its own checkout), never the
+  user's project folder. The system Python has no `ai_eda` module. If neither is found, ask the user where
+  it is installed; do not search the disk or install it.
 - Korean reports and messages are UTF-8. A Windows console that prints garbled text needs, before the run:
 
 ```
