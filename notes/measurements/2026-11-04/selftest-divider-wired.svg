@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="kicad-sch-preview" viewBox="0 0 297 210" width="297mm" height="210mm" data-content-box="39.6887 19.21 76.9303 64.45" role="img" aria-label="KiCad schematic preview: selftest" font-family="&#39;DejaVu Sans&#39;, &#39;Noto Sans&#39;, &#39;Liberation Sans&#39;, Arial, &#39;Noto Sans CJK KR&#39;, &#39;Malgun Gothic&#39;, &#39;Apple SD Gothic Neo&#39;, sans-serif" stroke-linecap="round" stroke-linejoin="round">
+<title>KiCad schematic preview: selftest</title>
+<rect class="paper" x="0" y="0" width="297" height="210" fill="#ffffff" stroke="#b9b6ab" stroke-width="0.3"/>
+<g class="wires">
+<line class="wire" x1="96.52" y1="53.34" x2="93.98" y2="53.34" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="76.2" y1="54.61" x2="76.2" y2="57.15" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="96.52" y1="48.26" x2="93.98" y2="48.26" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="50.8" y1="46.99" x2="50.8" y2="44.45" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="96.52" y1="50.8" x2="93.98" y2="50.8" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="50.8" y1="54.61" x2="50.8" y2="57.15" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="76.2" y1="46.99" x2="76.2" y2="44.45" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="76.2" y1="57.15" x2="76.2" y2="72.39" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="76.2" y1="72.39" x2="82.55" y2="72.39" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="82.55" y1="53.34" x2="82.55" y2="72.39" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="82.55" y1="53.34" x2="93.98" y2="53.34" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="50.8" y1="29.21" x2="50.8" y2="44.45" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="50.8" y1="29.21" x2="83.82" y2="29.21" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="83.82" y1="29.21" x2="83.82" y2="48.26" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="83.82" y1="48.26" x2="93.98" y2="48.26" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="50.8" y1="57.15" x2="50.8" y2="73.66" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="50.8" y1="73.66" x2="81.28" y2="73.66" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="76.2" y1="30.48" x2="76.2" y2="44.45" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="76.2" y1="30.48" x2="81.28" y2="30.48" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="81.28" y1="30.48" x2="81.28" y2="50.8" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="81.28" y1="50.8" x2="81.28" y2="73.66" stroke="#006400" stroke-width="0.15"/>
+<line class="wire" x1="81.28" y1="50.8" x2="93.98" y2="50.8" stroke="#006400" stroke-width="0.15"/>
+</g>
+<g class="symbols">
+<g class="symbol" data-ref="R1" data-lib-id="Device:R" data-unit="1">
+<rect class="body" x="49.784" y="48.26" width="2.032" height="5.08" fill="none" stroke="#8b0000" stroke-width="0.254"/>
+<line class="pin" data-number="1" x1="50.8" y1="46.99" x2="50.8" y2="48.26" stroke="#8b0000" stroke-width="0.15"/>
+<line class="pin" data-number="2" x1="50.8" y1="54.61" x2="50.8" y2="53.34" stroke="#8b0000" stroke-width="0.15"/>
+<text class="field" data-field="Reference" x="53.467" y="50.8" font-size="1.651" text-anchor="middle" fill="#0b0b0b" transform="rotate(-90 53.467 50.8)">R1</text>
+<text class="field" data-field="Value" x="51.435" y="50.8" font-size="1.651" text-anchor="middle" fill="#52514e" transform="rotate(-90 51.435 50.8)">14k</text>
+</g>
+<g class="symbol" data-ref="R2" data-lib-id="Device:R" data-unit="1">
+<rect class="body" x="75.184" y="48.26" width="2.032" height="5.08" fill="none" stroke="#8b0000" stroke-width="0.254"/>
+<line class="pin" data-number="1" x1="76.2" y1="46.99" x2="76.2" y2="48.26" stroke="#8b0000" stroke-width="0.15"/>
+<line class="pin" data-number="2" x1="76.2" y1="54.61" x2="76.2" y2="53.34" stroke="#8b0000" stroke-width="0.15"/>
+<text class="field" data-field="Reference" x="78.867" y="50.8" font-size="1.651" text-anchor="middle" fill="#0b0b0b" transform="rotate(-90 78.867 50.8)">R2</text>
+<text class="field" data-field="Value" x="76.835" y="50.8" font-size="1.651" text-anchor="middle" fill="#52514e" transform="rotate(-90 76.835 50.8)">10k</text>
+</g>
+<g class="symbol" data-ref="J1" data-lib-id="Connector_Generic:Conn_01x03" data-unit="1">
+<rect class="body" x="100.33" y="46.99" width="2.54" height="7.62" fill="#fff8dc" stroke="#8b0000" stroke-width="0.254"/>
+<rect class="body" x="100.33" y="48.133" width="1.27" height="0.254" fill="none" stroke="#8b0000" stroke-width="0.1524"/>
+<rect class="body" x="100.33" y="50.673" width="1.27" height="0.254" fill="none" stroke="#8b0000" stroke-width="0.1524"/>
+<rect class="body" x="100.33" y="53.213" width="1.27" height="0.254" fill="none" stroke="#8b0000" stroke-width="0.1524"/>
+<line class="pin" data-number="1" x1="96.52" y1="48.26" x2="100.33" y2="48.26" stroke="#8b0000" stroke-width="0.15"/>
+<text class="pin-number" data-number="1" x="98.425" y="48.006" font-size="1.651" text-anchor="middle" fill="#8b0000">1</text>
+<line class="pin" data-number="2" x1="96.52" y1="50.8" x2="100.33" y2="50.8" stroke="#8b0000" stroke-width="0.15"/>
+<text class="pin-number" data-number="2" x="98.425" y="50.546" font-size="1.651" text-anchor="middle" fill="#8b0000">2</text>
+<line class="pin" data-number="3" x1="96.52" y1="53.34" x2="100.33" y2="53.34" stroke="#8b0000" stroke-width="0.15"/>
+<text class="pin-number" data-number="3" x="98.425" y="53.086" font-size="1.651" text-anchor="middle" fill="#8b0000">3</text>
+<text class="field" data-field="Reference" x="101.6" y="46.355" font-size="1.651" text-anchor="middle" fill="#0b0b0b">J1</text>
+<text class="field" data-field="Value" x="101.6" y="56.515" font-size="1.651" text-anchor="middle" fill="#52514e">Conn_01x03</text>
+</g>
+</g>
+<g class="marks">
+<circle class="junction" cx="81.28" cy="50.8" r="0.4572" fill="#006400"/>
+</g>
+<g class="labels">
+<g class="global-label" data-net="GND" data-shape="passive">
+<polygon points="93.98,52.2288 89.5604,52.2288 89.5604,54.4513 93.98,54.4513" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="93.5038" y="53.848" font-size="1.651" text-anchor="end" fill="#008080">GND</text>
+</g>
+<g class="global-label" data-net="GND" data-shape="passive">
+<polygon points="75.0888,57.15 75.0888,61.5696 77.3113,61.5696 77.3113,57.15" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="76.708" y="57.6262" font-size="1.651" text-anchor="end" fill="#008080" transform="rotate(-90 76.708 57.6262)">GND</text>
+</g>
+<g class="global-label" data-net="VIN" data-shape="passive">
+<polygon points="93.98,47.1487 90.2208,47.1487 90.2208,49.3712 93.98,49.3712" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="93.5038" y="48.768" font-size="1.651" text-anchor="end" fill="#008080">VIN</text>
+</g>
+<g class="global-label" data-net="VIN" data-shape="passive">
+<polygon points="51.9112,44.45 51.9112,40.6908 49.6887,40.6908 49.6887,44.45" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="51.308" y="43.9738" font-size="1.651" text-anchor="start" fill="#008080" transform="rotate(-90 51.308 43.9738)">VIN</text>
+</g>
+<g class="global-label" data-net="VOUT" data-shape="passive">
+<polygon points="93.98,49.6887 88.4047,49.6887 88.4047,51.9112 93.98,51.9112" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="93.5038" y="51.308" font-size="1.651" text-anchor="end" fill="#008080">VOUT</text>
+</g>
+<g class="global-label" data-net="VOUT" data-shape="passive">
+<polygon points="49.6887,57.15 49.6887,62.7253 51.9112,62.7253 51.9112,57.15" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="51.308" y="57.6262" font-size="1.651" text-anchor="end" fill="#008080" transform="rotate(-90 51.308 57.6262)">VOUT</text>
+</g>
+<g class="global-label" data-net="VOUT" data-shape="passive">
+<polygon points="77.3113,44.45 77.3113,38.8747 75.0888,38.8747 75.0888,44.45" fill="none" stroke="#008080" stroke-width="0.15"/>
+<text class="label-text" x="76.708" y="43.9738" font-size="1.651" text-anchor="start" fill="#008080" transform="rotate(-90 76.708 43.9738)">VOUT</text>
+</g>
+</g>
+</svg>
