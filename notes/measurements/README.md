@@ -16,3 +16,4 @@ plan의 "측정됨" 주장은 전부 이 폴더의 날짜 폴더(`YYYY-MM-DD/`)�
 ## 지금 있는 것
 
 - `2026-11-04/` — 첫 측정(robotics-lab, KiCad 10.0.6, ngspice-46, Python 3.12.10, 참고 커밋 `4ee4d8e`). `env.txt`는 다음 측정 때 추가한다.
+- `2026-11-05/` — A단계 마무리(robotics-lab, 참고 커밋 `03bd642`, 스킬 11250a2 → 2차 리뷰 반영본): `env.txt`(doctor 전체 출력·ngspice.dll sha256), `g9-determinism-seeded-defect.md`, `step6-trigger-test-2.md`, `step6-review-2.md`.
