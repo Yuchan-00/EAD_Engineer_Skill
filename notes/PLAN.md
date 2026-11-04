@@ -56,6 +56,7 @@ LLM 경로(`--llm openrouter|claude`)는 키/CLI가 없어 미검증. 파이프�
 - **에이전트는 제안만**(`IRProposal`), `Orchestrator.apply_proposals`만 설계를 바꾼다. 필수 질문이 있으면 파이프라인이 멈춘다(exit 1).
 - **2-run 확인 프로토콜**: 모델/템플릿 제안은 표로 보여 주고(`ir.requirements.presented`에 sha256 기록), **다음 실행**에서 `--answer confirm_design=yes` 등으로만 적용. 같은 실행에 요구사항을 바꾸는 답이 섞이면 확인은 무시되고 재질문.
 - **외부 행위는 승인**: 네트워크(`--online`), 유료 호출(`--llm-budget-*`), 구독 호출(`--llm claude`)이 각각 1회성 승인.
+- **기준값의 출처(2026-11-04 추가, §7 D5·D8의 전제)**: SPICE 기대값의 nominal·허용오차는 `user_requirement`나 `authoritative`에서 유도된 것만 PASS의 근거다. LLM이 제안한 기준(`llm_generated`)에 대한 통과는 "제안된 기준에 대한 PASS"로만 표시하고 상태는 NOT_VERIFIED — 자기 숙제를 자기가 채점하지 않는다. 현재 코드(확인함): SPICE 컴파일러는 `llm_generated` 출처의 값·바인딩·자극·기대값을 **아예 거부**한다(`compilers/spice.py:235-237` "nothing an LLM proposed reaches ngspice until it is verified"), `assumption` 위의 PASS는 NOT_VERIFIED로 강등한다(`tools/spice/stage.py:761-763`). 확인 표에서 승인된 제안은 사용자의 값(`user_requirement`)이 되므로, **확인 표는 기대값마다 "LLM 제안 기준"과 유도 근거를 보여 줘야** 사용자가 무엇을 승인하는지 알 수 있다(D5의 표 요구사항).
 - **부품 identity**는 아카이브된 PDF 데이터시트 본문에서 MPN을 verbatim으로 찾을 때만 grounded. 규제는 출처·적용 여부만 말하고 `regulatory.compliance`는 항상 `NOT_VERIFIED`.
 
 ### 2.3 19단계 파이프라인 (`ai_eda/workflow/stages.py` `STAGE_ORDER`)
@@ -282,9 +283,83 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 | D2 | 설계가 자기 입력 키·단위를 선언 | `_NEEDABLE_KEYS`/`UNIT_OF` 고정(`base.py:116`, `inputs.py:96-105`) | D1 파일에 `inputs: {key: {unit, range}}` 허용, 그 키만 세션 `UNIT_OF`에 합침; 맨 키 거부 유지 | 선언 키가 `user_requirement`로 들어가고, 선언 없는 키는 현재와 같은 거부문 |
 | D3 | 비템플릿 설계의 하류 상태 명시 | `checks.py:10-28`는 `None`, 스택업은 `add_board`만, 보고서 `NO_TEMPLATE` | 검사는 템플릿 객체 대신 IR provenance로; 스택업은 D1 파일 `pcb.stackup` 또는 기본값+메시지; 보고서 라벨 "사용자 제공 설계(해시)" | `design.inputs_vs_requirements`가 PASS/NOT_VERIFIED 중 하나로 존재, DRC가 스택업 부재로 FAIL 않음, 보고서에 `NO_TEMPLATE` 없음 |
 | D4 | `serves_requirements` 필수화 | 비면 리뷰어 FAIL(`reviewer.py:400`) | D1 검증에서 요구 id 없는 부품은 한 줄 메시지 + exit 2(A5 매핑) | 누락 파일은 `run` 전 거부, 채운 파일은 `review.*`에 trace FAIL 없음 |
-| D5 | LLM `CIRCUIT_DESIGN` 제안 | 라벨뿐(`llm/router.py:86`), 프롬프트 없음 | LLM이 D1 파일 형식을 내놓게 해 D1 경로로(`llm_generated` → 표 확인 필수); 이 PC는 LLM 키 없음(§1.2) → 키 생긴 뒤 | `--llm` 없이는 메시지 불변 |
+| D5 | **LLM = 템플릿 작성자** (사용자 결정 2026-11-04: 흔한 회로는 D9 템플릿, 그 밖은 1회용 LLM 제안) | 템플릿을 전부 만들 수 없다; `CIRCUIT_DESIGN`은 라벨뿐(`llm/router.py:86`), 프롬프트 없음 | 맞는 템플릿이 없을 때만 LLM을 불러 **템플릿과 같은 모양의 1회용 설계 제안**(부품·넷·값, `SpiceBinding` 또는 `exclude`+사유, 자극·분석·기대값과 그 기준의 유도 근거, D8용 포트·정격 선언)을 D1 형식으로 받는다. 출처는 전부 `llm_generated`; 기존 `confirm_design` 표/해시 게이트를 그대로 통과해야 IR에 들어간다. 부품은 라이브러리 해석이 거부하면 탈락, 모델 카드는 D6 출처가 없으면 `assumption`. **LLM 개입은 첫 설계와 사용자의 재설계 요청 때뿐**: 값 변경·재생성·수리 루프는 저장된 IR만 쓴다(결정성). 확인된 제안은 D1 파일로 내보내 재사용(사용자만의 템플릿 모음이 됨). 유료 호출 = 예산 플래그·승인(§2.2), 공급자는 §9 J1 | fake 공급자(`--llm fake:<json>`)로: 제안 → 표(기대값마다 "LLM 제안 기준"과 유도 근거 열) → 다음 실행 확인 → 그때부터 시뮬레이션; **확인 전 제안은 ngspice에 닿지 않음**(`compilers/spice.py:235-237`의 거부가 그대로 작동, 테스트로 고정); 기준이 요구사항에서 유도된 기대값만 PASS; 확인 뒤 재실행에서 LLM 호출 0회(`fake.requests` 비어 있음); 내보낸 D1 파일을 다시 넣으면 같은 IR 해시 |
 | D6 | 아날로그 IC 벤더 모델(op-amp·레귤레이터·비교기)의 입구 (Codex 회의 #2 MISSING 4) | "모든 회로"는 펌웨어보다 먼저 IC 모델에서 막힌다. IR은 이미 `SpiceBinding.model_card`(verbatim `.model`/`.subckt`, authoritative/user provenance 필수, `ir/simulation.py:100-104`)를 지원하지만 벤더 `.lib`를 가져오는 절차·검사가 없다 | 새 필드 없음: D1 파일의 부품에 `model_card` + 출처(URL/파일 해시)를 허용하고, D1 검증이 그 텍스트를 `validate_deck` 규칙(따옴표·금지 카드·`.include` 없음)으로 미리 검사; 출처 없는 카드는 `assumption`으로 강등 → 그 부품의 결과 NOT_VERIFIED | 벤더 op-amp subckt 하나를 D1 파일로 넣어 `spice.*` PASS에 `model_card` 해시·출처가 찍힘; 출처를 빼면 같은 실행이 NOT_VERIFIED |
+| D8 | **템플릿 독립 검증 층** (사용자 요청 2026-11-04: "어떤 회로든 대신호·소신호를 전 방면에서 검토") | 계산기(`calc.*` 100여 개)와 SPICE 기대값은 **템플릿이 골라 적어 준 것만** 돈다; 템플릿 없는 회로는 기대값이 0개라 시뮬레이션이 돌아도 전부 NOT_VERIFIED. 구조·제조 검증(ERC/DRC/연결성/제조 한계/열 예산 일부)만 템플릿과 무관 | D1 형식에 **선언**(포트 in/out/전원, 부품 정격, 피드백 루프·블록 종류)을 두고, 선언에서 검사 목록을 자동 생성: 대신호 — 동작점(모든 Q/M/D의 바이어스 영역, 의도치 않은 포화·차단), 레일 전류 합산과 부품별 소산 대 정격, DC 스윕 클리핑, 과도 정착·오버슈트·돌입; 소신호 — 선언된 포트의 AC 이득·대역폭·위상, 피드백 선언 시 루프 위상·이득 여유, 입출력 임피던스; 구조 — 플로팅 노드·무부하 출력·디커플링. 모든 검사는 도구 결과로만 PASS, 선언이 없으면 그 검사는 "선언 `<키>` 없음"으로 NOT_VERIFIED. 단계: D8a 동작점+정격(S–M), D8b 포트 AC(M), D8c 루프 안정성(M–L), 잡음·PSRR은 뒤. 기존 템플릿도 같은 층을 타게 해 회귀 테스트로 삼는다 | D8a: 분배기·RC 템플릿이 기존 PASS 집합을 유지하면서 동작점·정격 행이 추가됨; 의도치 않게 포화된 BJT 회로가 FAIL; 정격 선언을 빼면 그 행만 NOT_VERIFIED. D8b: RC 템플릿의 차단 주파수가 템플릿 기대값 없이 포트 선언만으로 같은 값에 PASS. D8c: 위상 여유 기대값이 요구사항에서 유도될 때만 PASS |
+| D9 | 기본 템플릿 카탈로그 (사용자 결정 2026-11-04: 흔한 회로는 미리 템플릿으로) | 아래 "D9 상세" 참고 | 아래 "D9 상세" 참고 | 아래 "D9 상세" 참고 |
 | D7 | KiCad 회로도/넷리스트 → D1 파일 변환 (Codex 회의 #2 MISSING 5) | 아무도 임의 회로의 IR을 손으로 쓰지 않는다; 변환기가 없으면 D1은 실사용자가 거의 없다 | **사용자 결정 사항**: 이 시스템은 IR이 원본이고 KiCad 파일은 파생물인데, 변환기는 흐름을 거꾸로 돌린다. 만든다면 "읽기 전용 입력, provenance `user_requirement`+파일 해시, 한 번 들어온 뒤로는 IR만 원본"으로 한정. D1 형식 확정 뒤 결정 | (결정 뒤) 템플릿이 만든 `.kicad_sch`를 변환해 D1으로 넣으면 원래 IR과 부품·넷이 동일 |
+
+**D9 상세: 기본 템플릿 카탈로그** (사용자 결정 2026-11-04: 흔한 회로는 미리 템플릿으로 — 템플릿 = API 키 없음·오프라인·결정론·tool-backed PASS까지 내는 판매 핵심. 그 밖은 D5 1회용 제안 + D8 검증 층)
+
+**모델 출처 정책 (M4를 여기서 닫음)**: KiCad 라이브러리의 `Sim.*`·`Simulation_SPICE.sp` 카드는 범용 기본값(기본 Gummel-Poon, 기본 D, Holger Vogt 단극 op-amp 매크로)이지 MPN에 대한 벤더 사실이 아니다. 따라서 `authoritative`로 보지 않고, 템플릿은 카드 본문을 **손으로 인라인한 확인된 선택**으로만 쓴다(`assumption`→확인 후 `user_requirement`; `templates.py:1110,1223`·`rf/models.py:3-20` 관례). SourceRef·sha256 절차 불필요, 벤더 카드는 D6. 결과: D·Q·op-amp 회로가 오늘 오프라인 PASS 가능하고, 모델 파라미터(BF·Rds·GBW)에서만 나오는 수치는 전부 "표시만".
+
+**선정 기준** (네 가지 모두 만족해야 후보):
+1. 수요 — 수요 조사 상위(출처 수 집계라 UNVERIFIED)이거나 상위 회로의 필수 블록.
+2. 오프라인 PASS — 부품이 수동소자·D·Q·M·op-amp 매크로뿐이고, 모델은 (a) 손 카드 확인 선택(astable 패턴) 또는 (b) 이상화+`exclude`(LED/L7805 패턴). 레귤레이터·555·비교기·스위칭 IC는 D6 뒤.
+3. 입력이 기존 키(`UNIT_OF`, `inputs.py:96-105`, RF 키 포함)로 표현되거나 새 키 ≤ 2개(맨 물리 단어 금지, `inputs.py:130`).
+4. 기대값의 `nominal`(또는 한계값) 최소 1개가 요구 키(`requirement_id`)에서 계산기로 유도되고, **요구값을 그대로 되돌려주는 항등식이 아니다** — 요구에서 R을 정하고 같은 R로 V=IR을 재는 식(션트, 제너 BV, 풀업 개방 레벨)은 PASS 근거가 아니다(§2.2). 모델 파라미터에서만 나오는 기준은 `assumption`, 표시만.
+
+**tier-1 후보 (있음 4 + 신규 5; 확정은 측정 뒤)** — `~줄` = 템플릿+계산기+테스트 추정(LED 152줄·RC 199줄·테스트 40개 기준)
+
+| id | 회로(수요 #) | 입력 키 | 계산기 → 기대값(nominal 출처) | 모델 | 새 키 | ~줄 | PASS·거부 |
+|---|---|---|---|---|---|---|---|
+| `divider` | 저항 분배기(#2) | input_voltage, output_voltage, output_current | 있음(`templates.py:456`) | R만 | 0 | 있음 | 현재 테스트 유지 |
+| `led` | LED+직렬 R(#1) | input_voltage, led_forward_voltage, led_forward_current | 있음(`:655`) | 이상화(`exclude_reason=MODEL`+`VLED`) | 0 | 있음 | 동상 |
+| `rc_lowpass` | RC 1차 LPF(#17) | cutoff_frequency | 있음(`:838`) | R·C만 | 0 | 있음 | 동상 |
+| `astable` | BJT 비안정(#22) | oscillation_frequency, input_voltage | 있음 | `.model QNPN NPN(TR=200n)` 확인 선택 | 0 | 있음 | 동상 |
+| `lc_lowpass` | LC 2차 LPF(#31) | cutoff_frequency, system_impedance(RF 키 재사용) | L·C(Butterworth, Z0) → AC `\|H(fc)\|`=−3 dB, nominal=cutoff_frequency | R·L·C만 | 0 | ~400 | AC PASS; 2회 빌드 해시 동일; Z0·fc 범위 밖 거부 |
+| `i2c_pullup` | I2C 풀업(#11) | input_voltage, clock_frequency, bus_capacitance, bus_rise_time | R_max=t_r/(0.8473·C) (0.8473=ln(0.7/0.3), I2C 30/70 % 문턱 — 계산기 상수, `tool_version`으로 추적), R_min=(Vdd−V_OL)/I_sink(V_OL·I_sink 선택) → tran: t=bus_rise_time에서 `v(SDA)`≥0.7·Vdd, nominal=input_voltage·bus_rise_time | R·C+PULSE(개방 드레인 이상화) | `bus_capacitance` F, `bus_rise_time` s | ~450 | tran PASS; R_min>R_max면 USER_INPUT_REQUIRED(거부문에 수치) |
+| `bjt_lowside_switch` | BJT 로우사이드 스위치+환류 D(#10 릴레이, #5 저항 부하) | input_voltage(제어), output_voltage(부하 공급), output_current, max_voltage_drop | R_b=(Vctl−Vbe)/(Ic/β_forced)(Vbe·β_forced 선택, 표에 노출) → tran ON 구간 `v(C)` MEAN ≤ max_voltage_drop(한계=요구 키); 턴오프 `v(C)` MAX ≤ output_voltage+Vf(Vf 선택→표시만) | `.model QNPN NPN(BF=…)`+`.model DFW D` 확인 선택; 코일=R+L | `max_voltage_drop` V | ~550 | 포화 기대값 PASS; `i(load)`는 표시만(부하 R이 요구에서 정해져 항등식); 구동 부족은 거부가 아니라 FAIL로 드러남; Ic>정격 선택이면 거부 |
+| `opamp_noninverting` | 비반전 op-amp(#7) | gain, input_voltage(공급) | R2/R1=gain−1(E-series 선택, 실제 비는 계산기) → AC 저주파 `\|v(out)/v(in)\|`=gain, nominal=gain | `kicad_builtin_opamp` `.subckt` 본문(2.5 kB `.sp`, Public Domain) 인라인 확인 선택 — QNPN과 같은 경로, `spice.py:369-375`가 자급 `.subckt` 허용 | `gain` V/V | ~500 | AC PASS; 대역·슬루(POLE·GAIN 매크로 파라미터)는 표시만; gain<1 또는 출력 스윙>공급 거부 |
+| `rectifier_cfilter` | 브리지 정류+C 필터(#29) | ac_input_voltage, ripple_voltage, output_current | C=I/(2f·ΔV), Vdc=√2·Vac−2Vf(f·Vf 선택) → tran PP(`v(out)`)≤ripple_voltage, MEAN(`v(out)`)=Vdc | `.model DR D` ×4 손 카드 확인 선택(라이브러리 1N4001 Sim.*은 읽지 않음) | `ac_input_voltage` V, `ripple_voltage` V | ~550 | 두 tran PASS; **표시만 행**: 다이오드 PIV=√2·Vac, 피크/평균 전류, C 리플 전류, 돌입 전류(정격 키 없음→NOT_VERIFIED) — 230 Vac에 1N4001이면 수치로 보이게 |
+
+신규 키 6개: `bus_capacitance, bus_rise_time, max_voltage_drop, gain, ac_input_voltage, ripple_voltage` — 전부 `KEY_ALIASES`+`UNIT_OF`에 단위와 함께(`inputs.py:85/96`); 비RF 키의 추출 프롬프트 테스트 존재 여부는 UNVERIFIED(M9).
+
+**tier-2 (보류 이유 한 줄씩)**
+- 반전(#15)/팔로워(#18)/Sallen-Key(#21): 같은 op-amp 인라인 카드 재사용; `opamp_noninverting`이 PASS·ERC를 통과한 뒤 각 ~300줄(Sallen-Key는 `filter_q` 키 1개 추가).
+- MOSFET 로우사이드(#5 M형)/역접속 PMOS(#12): 범용 NMOS/PMOS 카드의 4노드 M 또는 subckt 래핑과 OP 수렴 실측(M5) 뒤; 로우사이드는 `bjt_lowside_switch`의 카드 교체 변형으로.
+- 레벨 시프터(#28): 요구 유도 기대값이 없음(개방 레벨은 풀업 항등식, L측 레벨은 선택값) → 기준 4 미달; D5 1회용.
+- 제너 션트(#27)·전류 션트(#20): 기대값이 전부 항등식(BV=요구값, V=I·R) → 기준 4 미달; D5 1회용 + 전력 "표시만".
+- 비교기(#14): 매크로 재사용 가능하나 문턱이 개루프 이득(모델 파라미터)에 의존 → 비반전 뒤 검토.
+- 555(#6), LDO(#3), TP4056(#23): 모델 0 → D6.
+- 서미스터(#19): 새 키 3개 → D2 뒤.
+- Pierce(#13): 모션 RLC는 부품 사실 → D6; `atmega128.py:230`이 부분 커버.
+- USB-C 5.1 kΩ(#9): 규격 상수가 계산기 안에 들어가는 것은 허용(I2C 0.8473과 같은 규칙)이나, 5.1 kΩ은 결과값 자체가 규격이고 시뮬레이션할 기대값이 없음 → 기준 4 미달.
+- TIA(#30): 안정성(위상 여유) 기준은 D8c 뒤.
+
+**하지 않을 것**
+- MCU 보드(#8, #24): `atmega128_devboard` 하나로 두고 D8·E1 뒤 재검토(보드당 ~880줄).
+- IC 제어 스위칭 레귤레이터(#4), H-bridge IC(#16), UART-USB(#25), LED 드라이버 IC(#26): 벤더 모델 없음/PSpice 전용이라 인라인 불가(`compilers/spice.py:22-24`) → exclude만 가능.
+- 요구 키에서 유도되지 않는 기대값(모델 파라미터·"흔한 값"·LLM 추천)은 어떤 템플릿에도 넣지 않는다(§2.2). 정격 비교는 사용자 정격 키가 없으면 "표시만" 행.
+- 데모 폴더의 벤더 `.lib`(Diotec bc337 등) 복사 금지: 라이선스·출처 검토는 D6.
+
+**제작 방식**
+- 템플릿은 **테스트가 딸린 코드**다(계약서 레시피 10단계). 파일: `ai_eda/design/catalog/<id>.py`(새 디렉터리; `templates.py`는 `TEMPLATES` 등록 줄만, `:1524`), 계산기는 `tools/calc/basic.py` `ROLES` + `recompute.py` `CALCULATORS`, 테스트는 `tests/test_catalog_<id>.py` + `test_si_templates.py` 파라미터에 id 추가.
+- 허용오차 출처: 요구에 허용오차가 있으면 그 값(`user_requirement`), 없으면 템플릿 상수를 `_choice()`로 노출(`assumption`→확인 후 `user_requirement`). E-series 반올림은 계산기가 nominal에 반영하고 반올림 전·후 값을 표에 둘 다 적는다. 기존 4개의 허용오차 처리 방식은 UNVERIFIED — 같은 규칙으로 맞춘다.
+- LLM(D5)은 템플릿 파일 **초안**을 낼 수 있다. 채택은 Codex `review` + 사람 + 테스트 전부 통과로만; 초안의 숫자·카드는 전부 `assumption`으로 시작한다.
+- 템플릿마다 필수 테스트 7종: 표 줄 포함, 확인 후 provenance(`user_requirement`·`CHOICE_NOTE_PREFIX`·계산기 `tool/inputs/tool_version`), 정확한 넷리스트 문자열, **2회 독립 빌드 해시 동일**, 범위·라이브러리 공백 거부, `@needs_dll` ngspice 1회(요구 키 추적 기대값 PASS), **ERC**(kicad-cli 있으면 error·warning 0, 없으면 NOT_VERIFIED 단언; 이 PC는 KiCad 10.0.6). `test_readme_usage_counts_every_template`(`:928`) 때문에 README·`gui/page.py` 수치를 함께 고친다.
+- D1 예제(`examples/designs/<id>.json`, 템플릿 코드에서 내보내기)는 **D1 형식이 있을 때만** 추가하는 후속 작업이며 D9 PASS 조건에 넣지 않는다.
+
+**순서·비용·위치**
+| 묶음 | 내용 | 전제 | ~줄 |
+|---|---|---|---|
+| D9a | `lc_lowpass, i2c_pullup, bjt_lowside_switch` + 새 키 3개 (전부 기존 패턴: R·L·C 값 소자, QNPN 카드) | M7 | ~1,400 |
+| D9b | `opamp_noninverting, rectifier_cfilter` + 새 키 3개 | M6·M10 | ~1,050 |
+| D9c | README/GUI 수치, 측정 기록, 전 9개 ERC 실측 | D9a·b | ~150 |
+| 합계 | 신규 템플릿 5, 계산기 ~20, 테스트 ~35(ngspice 5, ERC 9) | | **≈2,600줄**, 2–3 PR |
+
+- §4 위치: 8단계 D9이지만 **D9a는 4b–6단계와 병행 가능** — 닿는 파일이 `design/catalog/`, `tools/calc/*`, `requirements/inputs.py`, `tests/test_catalog_*.py`, README·`gui/page.py`뿐이라 A5(`cli.py`·`workflow/orchestrator.py`)·B11(배선 컴파일러)과 겹치지 않는다. 단 **`TEMPLATES` 등록은 B11 W1 머지 뒤**(B11 PASS 집합이 커지지 않도록).
+- D9 PASS 조건: `len(TEMPLATES)`=9(+RF 5), 9개 모두 필수 테스트 7종 통과, 이 PC(KiCad 10.0.6/ngspice-46)에서 ngspice 5건·ERC 9건 실측 PASS가 `notes/measurements/<날짜>/`에 기록(§3.5 B1 형식), 기대값 중 `nominal.provenance`가 요구 키로 추적되지 않는 것 0개(테스트로 고정), 항등식 기대값 0개(리뷰 체크리스트).
+
+**측정 항목 (후보 확정 전, 이 PC)** — 결과가 다르면 해당 행을 tier-2로 내리고 이유를 적는다. M2·M3(라이브러리 Sim.* grep)은 정책상 손 카드만 쓰므로 삭제, M4는 위에서 닫음, M5는 tier-2 MOSFET 행의 전제로 이동.
+| # | 측정 | 영향 행 | 방법 |
+|---|---|---|---|
+| M1 | `library_component()`(`library_parts.py:25-66`)가 `extends` 상속(BC547→Q_NPN_CBE, 1N4148→1N4001)의 **핀**을 보는가 | bjt_lowside_switch, rectifier | 코드 읽기 + 합성 라이브러리 테스트 1개 |
+| M6 | 브리지 4D + C의 tran 수렴, 돌입 구간 포함 | rectifier | `NgspiceShared.run` 덱 1개 |
+| M7 | 판정 축약 11종(`ir/simulation.py:251-297`)에 PP/MEAN/MAX/특정 시각 VALUE가 있는지; 없으면 기대값 형식 수정 | i2c_pullup, rectifier, bjt_lowside_switch | 코드 읽기 |
+| M8 | kicad-cli ERC 1건 소요 시간(9건 예산) | 전체 | 1회 실행·시간 기록 |
+| M9 | 비RF 새 키에 추출 프롬프트 테스트가 요구되는지(`test_rf_requirement_keys.py:245`의 비RF 대응물) | 새 키 6개 | grep |
+| M10 | `kicad_builtin_opamp` `.subckt`(레일 제한 D 포함)가 자급 카드로 컴파일되고(`spice.py:369-375`, `SpiceDevice.X`) AC 해석이 수렴하는지 | opamp_noninverting | 덱 1개 |
 
 **E: 프로그래머블 소자**(단계·도구는 7.2 표)
 
@@ -301,7 +376,7 @@ exit code: `0` 완료(PASS 또는 NOT_VERIFIED), `1` 필수 질문에 막힘 또
 
 ### 7.4 순서와 위험
 §4의 1-7(plan 확인 → A5/A6 → B4·B2/B9/B10 → B1 기록+A7 → 회의 #3 → SKILL.md 초안 → 푸시) 뒤에 붙인다. 스킬 초안은 §7 없이도 진실되게 쓸 수 있다(7.5 첫 줄만 먼저 반영).
-8. **D1 → D4 → D3 → D6.** D2는 첫 비템플릿 회로가 실제로 새 키를 필요로 할 때. D5는 LLM 키가 생긴 뒤. D7은 D1 형식 확정 뒤 사용자 결정.
+8. **D1(형식) → D9(기본 템플릿, 1차) → D8a → D4 → D3 → D6 → D8b/D8c.** D1·D5·D8·D9는 **한 입력 형식**을 공유한다(템플릿도 D1 파일 예제로 내보낸다). D2는 첫 비템플릿 회로가 실제로 새 키를 필요로 할 때. D5는 LLM 키가 생긴 뒤(그 전엔 fake 공급자로 테스트만). D7은 D1 형식 확정 뒤 사용자 결정. 사용자 결정(2026-11-04): 범용성은 "D9 소수 템플릿 + D5 1회용 제안 + 확인된 설계 파일 재사용"의 조합으로 얻고, 템플릿은 키 없이 오프라인에서 PASS까지 내는 판매 핵심이다.
 9. **E1 → E3**(둘 다 오늘 도구로 PASS 가능: `A` 소자 실행 측정됨) **→ E2(+E4)**(Codex 회의 #2: simavr가 이미 있으므로 E2의 첫 실측은 외부 설치 없이 가능하고, E4는 E2가 필요로 하는 탐지만. E2의 PASS가 doctor 버전 대조를 전제하므로 E4의 doctor 줄은 E2의 일부로 같이 만든다). D 순서 D1→D4→D3는 D4(파일 검증 exit 2)가 D3의 상태값에 의존하지 않으므로 유지.
 10. **이 PC에서 남은 측정**(E5/E6의 진입 조건): (a) ~~simavr VCD 생산~~ 완료(7.1); (b) `d_process` 한 줄 덱 실행(래퍼 프로그램이 있어야 하므로 E5 설계와 함께); (c) standalone ngspice-47 — 현재 NOT FOUND(7.1), 설치할지는 사용자 결정(§4 1단계 ⑨); (d) C 컴파일러·Verilator — 현재 NOT FOUND(7.1), 설치할지는 사용자 결정. **(c)(d)는 외부 설치라 사용자 승인 사항**(§3.3 `system_install`). 완료된 측정(7.1)은 반복하지 않는다.
 11. **측정 결과에 따라 E5 / E6.** 없다고 나온 도구에 의존하는 항목은 "보류(이유: 측정 결과)"로 바꾸고 지우지 않는다.
