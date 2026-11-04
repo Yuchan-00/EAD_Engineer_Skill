@@ -1,0 +1,4 @@
+am source probe 2
+v1 in 0 AM(1 0 1k 20k)
+r1 in 0 1k
+.end

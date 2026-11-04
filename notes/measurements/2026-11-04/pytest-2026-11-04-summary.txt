@@ -1,0 +1,40 @@
+# Full pytest on this PC, 2026-11-04 (KiCad 10.0.6 / ngspice-46 / Windows 11 / Python 3.12.10)
+# command: python -m pytest -v --no-header -p no:cacheprovider -o faulthandler_timeout=900 --durations=15 --deselect tests/test_report.py::test_serve_loopback_read_only_and_live
+
+## canary / measured-version evidence (B1)
+tests/test_gui_server.py::test_the_page_runs_in_a_real_browser_under_its_csp PASSED
+tests/test_gui_server.py::test_every_tab_and_the_design_confirmation_form_render_in_a_real_browser PASSED
+tests/test_gui_server.py::test_kicad_3d_exports_are_listed_with_their_facts_and_only_registered_renders_are_served PASSED
+tests/test_gui_server.py::test_the_3d_tab_draws_with_webgl_or_falls_back_to_the_svg_in_a_real_browser PASSED
+tests/test_kicad_3d_export.py::test_3d_export_flags_are_listed_by_help_canary[subcommand0-flags0] PASSED
+tests/test_kicad_3d_export.py::test_3d_export_flags_are_listed_by_help_canary[subcommand1-flags1] PASSED
+tests/test_kicad_3d_export.py::test_3d_export_flags_are_listed_by_help_canary[subcommand2-flags2] PASSED
+tests/test_kicad_3d_export.py::test_3d_exports_write_step_glb_and_png_canary PASSED
+tests/test_kicad_cli.py::test_sibling_project_rules_are_applied_by_drc_canary PASSED
+tests/test_model3d.py::test_kicad_3d_exports_pass_the_documented_flags_and_check_the_output PASSED
+tests/test_model3d.py::test_kicad_3d_exports_refuse_stale_or_wrong_output PASSED
+tests/test_model3d.py::test_kicad_3d_export_refuses_exit_code_5_and_reads_help_flags SKIPPED
+tests/test_report_pdf.py::test_real_browser_prints_korean_html PASSED
+tests/test_silk_3d_pipeline.py::test_without_kicad_cli_the_outcome_says_3d_export_skipped_never_fail PASSED
+tests/test_silk_3d_pipeline.py::test_with_kicad_cli_the_3d_exports_follow_the_gerbers_and_are_registered_like_them PASSED
+tests/test_silk_3d_pipeline.py::test_kicad_3d_exporters_refuse_without_a_kicad_cli PASSED
+tests/test_silkscreen.py::test_silk_drc_canary_no_silk_over_copper_or_silk_overlap PASSED
+tests/test_stage_reports.py::test_stage_reports_are_printed_to_pdf_by_the_real_browser PASSED
+
+## failures
+FAILED tests/test_circuit_templates.py::test_astable_verifies_at_the_bounds_of_its_own_validity_range[3 V-100 Hz-100.0]
+FAILED tests/test_circuit_templates.py::test_astable_verifies_at_the_bounds_of_its_own_validity_range[3 V-200 Hz-200.0]
+FAILED tests/test_claude_cli_client.py::test_an_interrupt_during_the_call_kills_and_reaps_the_child
+FAILED tests/test_claude_cli_client.py::test_an_argument_the_os_cannot_encode_is_an_llm_error_not_a_value_error
+FAILED tests/test_gui_server.py::test_post_needs_the_pages_own_origin_and_a_json_body
+FAILED tests/test_gui_server.py::test_the_run_endpoints_need_the_pages_own_origin_and_a_json_body
+FAILED tests/test_leave_out.py::test_a_refusal_is_answered_by_leave_out_in_the_report_and_the_gui_other_questions_keep_their_value
+FAILED tests/test_md_review_findings_regressions.py::test_7_remove_matches_by_design_content
+FAILED tests/test_report.py::test_report_of_offline_divider_run - assert "ai-...
+FAILED tests/test_report.py::test_questions_have_answer_commands_and_model_labels
+FAILED tests/test_report_pdf.py::test_a_snap_browser_is_not_started_on_a_file_it_cannot_read
+FAILED tests/test_rf_spice.py::test_am_depth_of_ngspice_s_am_source - Asserti...
+FAILED tests/test_rf_spice.py::test_a_biased_am_depth_never_passes_a_depth_outside_the_band
+
+## summary
+==== 13 failed, 2870 passed, 55 skipped, 1 deselected in 897.63s (0:14:57) ====
